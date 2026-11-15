@@ -1,0 +1,5 @@
+// Gemaakt door tools/foto-maten.mjs: welke foto uit /media welke kleinere versies (avif, in /img/k/) heeft. Niet met de hand aanpassen.
+const MATEN = {"citroen-berlingo-2.webp":[480,780],"citroen-berlingo-3.webp":[480,780],"citroen-berlingo-4.webp":[480,780],"citroen-berlingo.webp":[480,780],"lamborghini-huracan.webp":[480,780,1080],"mercedes-amg-g-63.webp":[480,780,1080],"mercedes-amg-s-63-cabrio.webp":[480,780,1080],"mercedes-benz-gle-450-amg-2.webp":[480,780],"mercedes-benz-gle-450-amg-3.webp":[480,780],"mercedes-benz-gle-450-amg.webp":[480,780,1080],"opel-corsa.webp":[480,780,1080],"renault-clio-v-2.webp":[480,780],"renault-clio-v-3.webp":[480,780],"renault-clio-v.webp":[480,780,1080],"rolls-royce-cullinan.webp":[480,780,1080],"yamaha-t-max-530-sx.webp":[480,780,1080]};
+const pad = (naam, b) => '/rushrents/img/k/' + naam.replace(/\.\w+$/, '') + '-' + b + '.avif';
+/** de kleinere versies van een foto als srcset-tekst; leeg als er geen zijn (dan is de foto zelf de enige bron) */
+export const fotoSet = (naam) => (MATEN[naam] || []).map((b) => pad(naam, b) + ' ' + b + 'w').join(', ');

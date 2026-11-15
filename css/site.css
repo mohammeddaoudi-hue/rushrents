@@ -1,5 +1,9 @@
 /* Rush Rents. Donker, één grotesk (Archivo: breed voor koppen), warm wit op bijna-zwart, haarlijnen. Radius: 4 px op beeld, 2 px op knoppen en velden. */
-@font-face { font-family: 'Archivo'; src: url('/rushrents/fonts/Archivo-Variable.woff2') format('woff2'); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+/* Lettertype: Archivo, gewicht 400 tot 600 en breedte 100 tot 125% (meer gebruikt de site niet). Het basisbestand (28 kB) heeft de tekens van
+   Nederlands, Frans en Engels en wordt voorgeladen; het tweede bestand (zeldzame tekens) haalt de browser alleen op als zo'n teken voorkomt.
+   Bron: bron/fonts/Archivo-Variable-volledig.woff2, verkleind met bron/fonts/subset.mjs. */
+@font-face { font-family: 'Archivo'; src: url('/rushrents/fonts/Archivo-Variable-extra.woff2') format('woff2'); font-weight: 400 600; font-stretch: 100% 125%; font-display: swap; unicode-range: U+00A1-024F, U+2000-206F, U+20A0-20BF, U+2190-21FF, U+2200-222F; }
+@font-face { font-family: 'Archivo'; src: url('/rushrents/fonts/Archivo-Variable.woff2') format('woff2'); font-weight: 400 600; font-stretch: 100% 125%; font-display: swap; unicode-range: U+0020-007E, U+00A0, U+00A9, U+00AB, U+00B7, U+00BB, U+00C0-00C1, U+00C4, U+00C7-00CB, U+00CF, U+00D3, U+00D6-00D7, U+00DC, U+00E0-00E2, U+00E4, U+00E7-00EB, U+00ED-00EF, U+00F1, U+00F3-00F4, U+00F6, U+00F9-00FC, U+200B, U+2013-2014, U+2018-2019, U+201C-201D, U+2022, U+2026, U+20AC, U+2192; }
 :root {
   --bg: #08080a; --bg2: #0d0d0f; --voet: #050506; --tx: #f4f1eb; --mut: #a7a299; --dim: #77736c; --uit: #55524d; --inkt: #0b0b0c;
   --lijn: rgba(255, 255, 255, .1); --lijn-sterk: rgba(255, 255, 255, .22); --lijn-knop: rgba(255, 255, 255, .3); --band: rgba(244, 241, 235, .1);
@@ -70,6 +74,15 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
 .btn-wit:hover, .btn-zwart:hover { background: #fff; }
 .btn-lijn { border-color: var(--lijn-knop); color: var(--tx); }
 .btn-lijn:hover { border-color: rgba(255, 255, 255, .6); }
+/* knop met masker (component 4): met een muis loopt de vulling van links naar rechts open (lijnknop) of dicht (witte knop); de tekst wisselt mee
+   van kleur. Niets schuift of veert. De knop in de hero doet hier niet aan mee. */
+@media (hover: hover) {
+  .btn-lijn, .btn-wit:not(.hero .btn, :disabled, [aria-disabled="true"]) { transition: background-size .45s var(--masker), border-color .25s var(--status), color .25s var(--status) .06s, scale .2s var(--status); }
+  .btn-lijn { background: linear-gradient(var(--tx), var(--tx)) no-repeat 0 0 / 0% 100%; }
+  .btn-lijn:hover { background-size: 100% 100%; border-color: var(--tx); color: var(--inkt); }
+  .btn-wit:not(.hero .btn, :disabled, [aria-disabled="true"]) { background: linear-gradient(var(--tx), var(--tx)) no-repeat 100% 0 / 100% 100%; border-color: var(--tx); }
+  .btn-wit:not(.hero .btn, :disabled, [aria-disabled="true"]):hover { background-size: 0% 100%; color: var(--tx); }
+}
 .btn:disabled, .btn[aria-disabled="true"] { background: transparent; border-color: var(--lijn-sterk); color: var(--dim); cursor: not-allowed; scale: 1; }
 .tekstknop { font-size: 14px; color: var(--tx); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--lijn-knop); min-height: 44px; display: inline-flex; align-items: center; gap: 8px; transition: text-decoration-color .2s var(--status); }
 .tekstknop:hover { text-decoration-color: var(--tx); }
@@ -79,6 +92,13 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
 .nav::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 120px; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(5, 5, 6, .6), rgba(5, 5, 6, 0)); transition: opacity .3s var(--status); }
 .nav.is-scroll, .nav.is-vast { height: var(--kop-klein); background: var(--bg); border-bottom-color: var(--lijn); }
 .nav.is-scroll::before, .nav.is-vast::before { opacity: 0; }
+/* navigatie (component 1): na het scrollen is de balk van glas (de pagina schemert erdoor), en onderaan loopt een haarlijn mee met hoe ver
+   je in de pagina bent (--lees, gezet in js/basis.js). Kan de browser geen glas, dan blijft de balk effen. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav.is-scroll, .nav.is-vast { background: rgba(8, 8, 10, .72); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+}
+.nav::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--tx); transform-origin: 0 50%; scale: var(--lees, 0) 1; opacity: 0; pointer-events: none; transition: opacity .3s var(--status); }
+.nav.is-scroll::after { opacity: .6; }
 .nav-in { display: flex; align-items: center; gap: 16px; height: 100%; }
 .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: auto; min-height: 44px; }
 .logo-rr { height: 40px; width: auto; }
@@ -88,14 +108,17 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
 .nav-links { display: none; gap: 32px; font-size: 14px; color: var(--tx); }
 .nav-links a { text-decoration: none; padding: 8px 0; box-shadow: inset 0 -1px 0 transparent; transition: box-shadow .2s var(--status); }
 .nav-links a:hover, .nav-links a[aria-current] { box-shadow: inset 0 -1px 0 var(--tx); }
-.nav-acties { display: flex; align-items: center; gap: 8px; }
+.nav-acties { display: flex; align-items: center; gap: 4px; }
 .ico-link, .menu-knop { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 2px; }
 .menu-knop .ico { width: 24px; height: 24px; }
-.nav .ico-link, .nav .nav-knop { display: none; }
+.nav .ico-link { display: none; }
+/* gsm: de knop Reserveren staat in de balk zodra de hero uit beeld is (in de hero staat de eigen knop); zo is reserveren altijd één tik weg */
+.nav .nav-knop { padding: 0 14px; font-size: 14px; transition: opacity .25s var(--status), visibility 0s linear 0s, background-size .45s var(--masker), border-color .25s var(--status), color .25s var(--status) .06s; }
+.nav.boven-hero .nav-knop { opacity: 0; visibility: hidden; transition: opacity .25s var(--status), visibility 0s linear .25s; }
 .nav .toon-altijd { display: grid; }
-.menu { border: 0; padding: 0; margin: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; background: var(--bg); color: var(--tx); }
+.menu { border: 0; padding: 0; margin: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; background: var(--bg); color: var(--tx); overflow-y: auto; overscroll-behavior: contain; }
 .menu[open] { display: block; animation: verschijn .2s var(--status); }
-.menu-in { display: flex; flex-direction: column; height: 100%; padding: 0 var(--goot) 28px; }
+.menu-in { display: flex; flex-direction: column; min-height: 100%; padding: 0 var(--goot) 28px; }
 .menu-kop { display: flex; align-items: center; justify-content: space-between; height: var(--kop); }
 .menu-links { display: grid; margin-top: 16px; }
 .menu-links a { font-size: 28px; font-weight: 600; font-stretch: 125%; letter-spacing: -.02em; text-decoration: none; padding: 16px 0; border-bottom: 1px solid var(--lijn); }
@@ -144,6 +167,8 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
 @supports (width: 1cqw) { @media (max-aspect-ratio: 11/10) { .hero-kop, .hero-toneel img { --th: 100cqh; } } }
 /* een liggende gsm (laag scherm): de knop staat onderaan de hero in plaats van over de neus van de wagen */
 @media (max-height: 520px) and (min-aspect-ratio: 11/10) { .hero-in { height: 100%; } }
+/* daar staat de knop van de hero onder de vouw: de knop Reserveren in de navigatie is er dan vanaf het begin; het menu is er compacter */
+@media (max-height: 520px) and (min-aspect-ratio: 11/10) { .nav.boven-hero .nav-knop { opacity: 1; visibility: visible; } .menu-links { margin-top: 0; } .menu-links a { font-size: 20px; padding: 9px 0; } .menu-contact { margin-top: 12px; } }
 /* merk-maat: gezet door tools/logo-blokken.mjs */ :root { --merk-v: 0.08050; }
 
 /* intro (alleen de homepage, één keer per sessie). Het RR-beeldmerk bouwt op uit zijn blokken, de foto verschijnt in de R'en en het masker
@@ -175,12 +200,16 @@ section { position: relative; }
 /* vloot */
 .tabs { display: flex; gap: 28px; margin: 28px calc(-1 * var(--goot)) 0; padding: 0 var(--goot); overflow-x: auto; scrollbar-width: none; box-shadow: inset 0 -1px 0 var(--lijn); }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { flex: none; height: 44px; font-size: 15px; color: var(--mut); white-space: nowrap; box-shadow: inset 0 -1px 0 transparent; transition: color .2s var(--status), box-shadow .2s var(--status); }
+/* het tikvlak van een tab is aan elke kant 10 px breder dan het woord (minstens 44 px); de streep staat onder het woord zelf */
+.tab { position: relative; flex: none; height: 44px; padding: 0 10px; margin: 0 -10px; font-size: 15px; color: var(--mut); white-space: nowrap; transition: color .2s var(--status); }
+.tab::after { content: ''; position: absolute; inset: auto 10px 0 10px; height: 1px; background: var(--tx); opacity: 0; transition: opacity .2s var(--status); }
 .tab:hover { color: var(--tx); }
-.tab[aria-pressed="true"] { color: var(--tx); box-shadow: inset 0 -1px 0 var(--tx); }
+.tab[aria-pressed="true"] { color: var(--tx); }
+.tab[aria-pressed="true"]::after { opacity: 1; }
 .tab:focus-visible { outline-offset: -2px; }
 .periode-regel { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 16px; padding: 4px 0; border-bottom: 1px solid var(--lijn); font-size: 14px; }
-.periode-knoppen { display: flex; gap: 20px; }
+.periode-knoppen { display: flex; gap: 8px; margin-right: -8px; }
+.periode-knoppen .tekstknop { min-width: 44px; justify-content: center; }
 .periode-vorm { flex-basis: 100%; display: grid; gap: 12px; padding: 8px 0 16px; }
 .cars { display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px 24px; margin-top: 32px; }
 .cars:empty { min-height: 100svh; }
@@ -188,6 +217,15 @@ section { position: relative; }
 /* wagenkaart: de hele kaart is de link; foto, naam, één feitenregel en rechts een kleine tekst die zegt wat de klik doet */
 .car { display: block; text-decoration: none; color: inherit; min-width: 0; }
 .car-media { position: relative; display: block; aspect-ratio: 3 / 2; overflow: hidden; border-radius: 4px; background: #0f0f11; }
+.car-media picture, .gal-beeld { display: contents; }
+/* vlootkaart (component 2): om de foto ligt een rand van 1 px die het licht vangt (boven links helder, uitlopend). Met een muis volgt een
+   lichtpunt op die rand de aanwijzer (--mx en --my, gezet in js/app.js). Alleen de rand licht op: over de foto zelf ligt niets extra. */
+.car-rand, .lichtrand::before { position: absolute; inset: 0; z-index: 1; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(165deg, rgba(255, 255, 255, .36), rgba(255, 255, 255, .06) 32%, rgba(255, 255, 255, .03) 68%, rgba(255, 255, 255, .16));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.lichtrand { position: relative; }
+.lichtrand::before { content: ''; }
+.car-rand::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .95), rgba(255, 255, 255, 0) 72%); opacity: 0; transition: opacity .35s var(--status); }
 .car-foto { width: 100%; height: 100%; object-fit: cover; filter: saturate(.85) contrast(1.05) brightness(.9); transition: scale .6s var(--intrede), filter .4s var(--status); }
 .car-media::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(8, 8, 10, 0) 58%, rgba(8, 8, 10, .42) 100%); transition: opacity .4s var(--status); }
 .car-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 4px 16px; padding-top: 16px; }
@@ -199,7 +237,7 @@ section { position: relative; }
 .car-regel { grid-column: 1; font-size: 14px; color: var(--mut); min-height: 21px; }
 .car-regel.is-actie { color: var(--tx); }
 .car-regel:empty::before { content: "\200b"; }
-.car-ga { grid-column: 2; font-size: 14px; color: var(--mut); display: inline-flex; align-items: center; gap: 6px; transition: color .2s var(--status); }
+.car-ga { grid-column: 2; font-size: 14px; color: var(--mut); display: inline-flex; align-items: center; gap: 6px; padding-bottom: 3px; background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0% 1px; transition: color .2s var(--status), background-size .45s var(--masker); }
 .car-ga .ico { width: 16px; height: 16px; }
 .car-status { grid-column: 1 / -1; font-size: 14px; }
 .status { display: flex; align-items: center; gap: 8px; color: var(--mut); }
@@ -209,23 +247,41 @@ section { position: relative; }
 @media (hover: hover) {
   .car:hover .car-foto { scale: 1.03; filter: none; }
   .car:hover .car-media::after { opacity: .4; }
-  .car:hover .car-ga { color: var(--tx); }
+  .car:hover .car-ga { color: var(--tx); background-size: 100% 1px; }
+  .car:hover .car-rand::after { opacity: 1; }
 }
 
 /* zo huur je: vier kolommen, elk onder een haarlijn */
 .stappen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 20px; margin-top: 40px; }
-.stappen li { border-top: 1px solid var(--lijn-sterk); padding-top: 16px; }
+.stappen li { position: relative; padding-top: 16px; }
+/* de haarlijn boven elke stap tekent zich van links naar rechts, de ene stap na de andere (component 3, zelfde lijn als bij de vragen) */
+.stappen li::after { content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; background: var(--lijn-sterk); }
+.stappen li:nth-child(2) { --n: 1; } .stappen li:nth-child(3) { --n: 2; } .stappen li:nth-child(4) { --n: 3; }
+@media (prefers-reduced-motion: no-preference) {
+  .onthul .stappen:not(.is-zicht) li::after { clip-path: inset(0 100% 0 0); }
+  .onthul .stappen.is-zicht li::after { clip-path: inset(0 0 0 0); transition: clip-path .9s var(--masker) calc(var(--n, 0) * 140ms + .1s); }
+}
 .stappen h3 { font-size: 16px; }
 .stappen p { color: var(--mut); margin-top: 8px; font-size: 15px; }
 
 /* vragen */
 .faq-in { display: grid; gap: 32px; }
-.vraag { border-bottom: 1px solid var(--lijn); transition: border-color .3s var(--status); }
+/* vragen (component 3): een plus die een min wordt, een witte lijn die zich onder de open vraag tekent, en het antwoord dat erbij komt.
+   De hoogte loopt mee; niets schuift. */
+.vraag { position: relative; border-bottom: 1px solid var(--lijn); }
 .vraag:first-child { border-top: 1px solid var(--lijn); }
-.vraag.is-open { border-bottom-color: var(--tx); }
+.vraag::after { content: ''; position: absolute; inset: auto 0 -1px 0; height: 1px; background: var(--tx); clip-path: inset(0 100% 0 0); transition: clip-path .5s var(--masker); pointer-events: none; }
+.vraag.is-open::after { clip-path: inset(0 0 0 0); }
 .vraag-knop { width: 100%; min-height: 64px; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 12px 0; text-align: left; font-size: 18px; font-weight: 500; }
-.vraag-knop .ico { transition: rotate .15s var(--status); }
-.vraag.is-open .vraag-knop .ico { rotate: 180deg; }
+.vraag-teken { position: relative; flex: none; width: 15px; height: 15px; color: var(--mut); transition: color .2s var(--status); }
+.vraag-teken::before, .vraag-teken::after { content: ''; position: absolute; inset: 50% 0 auto 0; height: 1.5px; margin-top: -.75px; background: currentColor; transition: rotate .4s var(--masker); }
+.vraag-teken::after { rotate: 90deg; }
+.vraag.is-open .vraag-teken::after { rotate: 0deg; }
+.vraag.is-open .vraag-teken, .vraag-knop:hover .vraag-teken { color: var(--tx); }
+.vraag-paneel > div { opacity: 0; transition: opacity .2s var(--status); }
+.vraag.is-open .vraag-paneel > div { opacity: 1; transition: opacity .35s var(--status) .12s; }
+.faq-kop { display: contents; }
+.faq-wa { order: 3; justify-self: start; }
 .vraag-paneel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--status); }
 .vraag.is-open .vraag-paneel { grid-template-rows: 1fr; }
 .vraag-paneel > div { overflow: hidden; }
@@ -237,25 +293,36 @@ section { position: relative; }
 .slot-rr { position: absolute; right: -4%; top: 50%; height: 150%; width: auto; max-width: none; translate: 0 -50%; pointer-events: none; fill: rgba(255, 255, 255, .022); stroke: rgba(255, 255, 255, .09); stroke-width: 1px; }
 .slot-rr path { vector-effect: non-scaling-stroke; }
 .slot-in { position: relative; display: grid; gap: 32px; }
-.slot .btn[data-onthul] { transition: opacity .4s var(--status) .25s, background-color .2s var(--status), border-color .2s var(--status), color .2s var(--status), scale .2s var(--status); }
+.slot .btn[data-onthul] { transition: opacity .4s var(--status) .25s, background-size .45s var(--masker), border-color .25s var(--status), color .25s var(--status) .06s, scale .2s var(--status); }
 .slot h2 { font-size: clamp(40px, 7.4vw, 104px); letter-spacing: -.035em; line-height: .96; }
 .slot .btn { width: 100%; }
-.voet { background: var(--voet); color: var(--mut); padding: 72px 0 32px; font-size: 14px; }
+/* voet (component 5): bovenaan het beeldmerk en de kolommen, daaronder RUSHRENTS over de volle breedte (het echte woordmerk als masker,
+   bovenaan licht en naar onder uitlopend in het donker), en helemaal onderaan de juridische regel. Het woordmerk opent van onder naar boven,
+   zoals in de hero. */
+.voet { background: var(--voet); color: var(--mut); padding: 72px 0 0; font-size: 14px; overflow: hidden; }
 .voet-in { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px 20px; }
-.voet-logo { width: 132px; height: auto; grid-column: 1 / -1; }
+.voet-logo { grid-column: 1 / -1; justify-self: start; display: block; }
+.voet-logo img { width: auto; height: 56px; }
+.voet-merk { width: min(100% - 2 * var(--goot), 1240px); margin: 56px auto 0; aspect-ratio: 311.4 / 28.8; background: linear-gradient(180deg, rgba(244, 241, 235, .26), rgba(244, 241, 235, .035) 88%);
+  -webkit-mask: url(/rushrents/img/logo-woord.svg) 50% 50% / 100% 100% no-repeat; mask: url(/rushrents/img/logo-woord.svg) 50% 50% / 100% 100% no-repeat; }
+@media (prefers-reduced-motion: no-preference) {
+  .onthul .voet-merk[data-onthul] { clip-path: inset(0 0 0 0); }
+  .onthul .voet-merk[data-onthul].is-zicht { transition: clip-path 1.1s var(--masker); }
+  .onthul .voet-merk[data-onthul]:not(.is-zicht) { opacity: 1; clip-path: inset(100% 0 0 0); }
+}
 .voet-kol { display: grid; align-content: start; }
 .voet-kol h2 { font-size: 13px; font-weight: 400; font-stretch: 100%; letter-spacing: 0; line-height: 1.5; color: var(--dim); margin-bottom: 8px; }
-.voet-kol a, .voet-kol > span { min-height: 36px; display: inline-flex; align-items: center; gap: 10px; color: var(--tx); text-decoration: none; }
+.voet-kol a, .voet-kol > span { min-height: 44px; display: inline-flex; align-items: center; gap: 10px; color: var(--tx); text-decoration: none; }
 .voet-kol [data-mail] { overflow-wrap: anywhere; }
 .voet-kol a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .socials { display: flex; flex-wrap: wrap; gap: 4px; margin-left: -12px; }
 .social { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 2px; color: var(--tx); transition: color .2s var(--status); }
 .social:hover { color: #fff; }
 .voet-kol .social { display: grid; min-height: 44px; }
-.voet-onder { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; border-top: 1px solid var(--lijn); padding-top: 24px; margin-top: 16px; font-size: 13px; color: var(--dim); line-height: 1.6; }
-.voet-onder a { color: var(--dim); text-underline-offset: 4px; }
+.voet-onder { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; border-top: 1px solid var(--lijn); padding: 20px 0 28px; margin-top: 28px; font-size: 13px; color: var(--dim); line-height: 1.6; }
+.voet-onder a { color: var(--dim); text-underline-offset: 4px; display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
 .voet-onder a:hover { color: var(--tx); }
-.voet-onder nav { display: flex; gap: 24px; }
+.voet-onder nav { display: flex; gap: 24px; margin: -11px 0; }
 
 /* velden */
 .veld, .invoer { display: grid; gap: 6px; font-size: 14px; color: var(--mut); min-width: 0; align-content: start; }
@@ -286,7 +353,7 @@ select option:disabled { color: var(--dim); }
 .kal { position: relative; }
 .kal-maanden { display: grid; gap: 24px; }
 .maand-titel { height: 40px; display: grid; place-items: center; font-size: 15px; font-weight: 600; font-stretch: 112%; letter-spacing: -.01em; }
-.kal-pijl { position: absolute; top: 0; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 2px; color: var(--tx); z-index: 1; }
+.kal-pijl { position: absolute; top: -2px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 2px; color: var(--tx); z-index: 1; }
 .kal-pijl.is-vorige { left: 0; }
 .kal-pijl.is-volgende { right: 0; }
 .kal-pijl:disabled { color: var(--uit); cursor: default; }
@@ -315,7 +382,7 @@ button.dag:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--lijn-knop); 
 .credits-lijst strong { color: var(--tx); font-weight: 500; display: block; }
 .credits-lijst a { text-underline-offset: 4px; }
 
-@media (max-width: 359px) { .logo-woord { display: none; } }
+@media (max-width: 379px) { .logo-woord { display: none; } }
 @media (min-width: 640px) {
   :root { --goot: 32px; }
   .hero .btn, .slot .btn { width: auto; }
@@ -325,7 +392,6 @@ button.dag:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--lijn-knop); 
   .periode-vorm { grid-template-columns: 1fr 1fr auto; align-items: end; }
   .periode-vorm .fout { grid-column: 1 / -1; }
   .voet-in { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 24px; }
-  .voet-logo { grid-column: 1 / -1; }
 }
 @media (min-width: 1000px) {
   :root { --goot: 40px; --sectie: 128px; --kop: 80px; --kop-klein: 64px; }
@@ -335,7 +401,8 @@ button.dag:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--lijn-knop); 
   .logo-woord { height: 12px; }
   .nav-links { display: flex; }
   .nav .ico-link { display: grid; }
-  .nav .nav-knop { display: inline-flex; }
+  .nav-acties { gap: 8px; }
+  .nav .nav-knop, .nav.boven-hero .nav-knop { padding: 0 20px; font-size: 15px; opacity: 1; visibility: visible; }
   .nav .menu-knop { display: none; }
   .tabs { margin-top: 40px; }
   .cars { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: 40px; }
@@ -347,9 +414,13 @@ button.dag:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--lijn-knop); 
   .stappen li { padding-top: 20px; }
   .stappen h3 { font-size: 18px; }
   .faq-in { grid-template-columns: 4fr 7fr; gap: 64px; align-items: start; }
+  .faq-kop { display: grid; gap: 20px; justify-items: start; position: sticky; top: calc(var(--kop-klein) + 40px); }
+  .vraag-knop { min-height: 76px; font-size: 20px; }
   .slot-in { grid-template-columns: 1fr auto; align-items: end; gap: 64px; }
   .voet-in { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px 24px; }
   .voet-logo { grid-column: 1 / span 4; }
+  .voet-logo img { height: 72px; }
+  .voet-merk { margin-top: 88px; }
   .voet-kol.is-menu { grid-column: 5 / span 3; }
   .voet-kol.is-contact { grid-column: 8 / span 3; }
   .voet-kol.is-volg { grid-column: 11 / span 2; }

@@ -4,6 +4,7 @@
 import { loadFleet, loadOccupancy, checkPeriod, requestReservation, iso, datum, plus, metDag, uren, leeftijdOp, MAANDEN, brusselMs, uurBestaat, nlDatum, isoUitNl, STATISCH } from './data.js';
 import { huurdagen, berekenPrijs, getal, euro } from './prijs.js';
 import { CONFIG, $, $$, h, ico, moment, waUrl, plaats, startBasis } from './basis.js';
+import { fotoSet } from './fotos.js';
 
 const id = location.pathname.replace(/^\/rushrents(?=\/)/, '').split('/').filter(Boolean)[1] || '';
 const STAPPEN = ['periode', 'extras', 'gegevens', 'controleren'];
@@ -85,15 +86,18 @@ async function controleer() {
 function bouwGalerij() {
   const gal = $('#galerij'), baan = $('#gal-baan'), eerste = $('#hoofdfoto');
   const fotos = [...(W.hoofdfoto ? [W.hoofdfoto] : []), ...W.fotos.filter((f) => f !== W.hoofdfoto)];
-  const dias = fotos.map((f, i) => (i === 0 && eerste ? eerste : h('img', { class: 'gal-dia' + (i === 0 ? ' is-actief' : ''), src: '/rushrents/media/' + f, alt: `${W.naam}, foto ${i + 1}`, loading: i === 0 ? 'eager' : 'lazy', decoding: 'async', width: 840, height: 560 })));
+  // elke foto krijgt haar kleinere versies (avif) mee waar die bestaan; de foto zelf blijft de terugval. De <img> blijft het element waarmee de galerij werkt.
+  const metMaten = (img, f, sizes) => { const set = fotoSet(f); if (set) h('picture', { class: 'gal-beeld' }, h('source', { type: 'image/avif', srcset: set, sizes }), img); return img; };
+  const GROOT = '(min-width: 1000px) calc(min(100vw - 80px, 1240px) - 464px), (min-width: 640px) calc(100vw - 64px), 100vw';
+  const dias = fotos.map((f, i) => (i === 0 && eerste ? eerste : metMaten(h('img', { class: 'gal-dia' + (i === 0 ? ' is-actief' : ''), src: '/rushrents/media/' + f, alt: `${W.naam}, foto ${i + 1}`, loading: i === 0 ? 'eager' : 'lazy', decoding: 'async', width: 840, height: 560 }), f, GROOT)));
   for (const v of W.videos) dias.push(h('video', { class: 'gal-dia', src: '/rushrents/media/' + v, controls: true, muted: true, playsinline: true, preload: 'none', poster: W.hoofdfoto ? '/rushrents/media/' + W.hoofdfoto : null, 'aria-label': `Video van de ${W.naam}` }));
   if (!dias.length) { gal.hidden = true; return; }
   if (!dias[0].classList.contains('is-actief')) dias[0].classList.add('is-actief');
-  baan.replaceChildren(...dias);
+  baan.replaceChildren(...dias.map((d) => d.closest('picture') || d)); // de hoofdfoto blijft in haar <picture> (kleinere versies, zie tools/foto-maten.mjs)
   if (dias.length < 2) return;
   const teller = h('p', { class: 'gal-teller', 'aria-hidden': 'true', text: `1 / ${dias.length}` });
   const duimen = dias.map((d, i) => h('button', { type: 'button', class: 'gal-duim' + (i === 0 ? ' is-actief' : ''), 'aria-label': d.tagName === 'VIDEO' ? 'Video' : `Foto ${i + 1}`, 'aria-pressed': String(i === 0), onclick: () => toon(i, true) },
-    h('img', { src: '/rushrents/media/' + (d.tagName === 'VIDEO' ? W.hoofdfoto : fotos[i]), alt: '', loading: 'lazy', width: 88, height: 59 })));
+    ((f) => { const img = metMaten(h('img', { src: '/rushrents/media/' + f, alt: '', loading: 'lazy', width: 88, height: 59 }), f, '88px'); return img.closest('picture') || img; })(d.tagName === 'VIDEO' ? W.hoofdfoto : fotos[i])));
   let nu = 0;
   const vegen = () => getComputedStyle(baan).display === 'flex';
   function toon(i, schuif) {

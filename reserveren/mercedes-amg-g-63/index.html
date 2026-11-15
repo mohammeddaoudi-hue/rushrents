@@ -35,7 +35,7 @@
   </div>
   <div class="res-in">
     <div class="res-links">
-      <div class="galerij" id="galerij"><div class="gal-baan" id="gal-baan"><img class="gal-dia is-actief" id="hoofdfoto" src="/rushrents/media/mercedes-amg-g-63.webp" alt="Mercedes-AMG G 63" width="840" height="560" fetchpriority="high"></div></div>
+      <div class="galerij" id="galerij"><div class="gal-baan" id="gal-baan"><picture class="gal-beeld"><source type="image/avif" srcset="/rushrents/img/k/mercedes-amg-g-63-480.avif 480w, /rushrents/img/k/mercedes-amg-g-63-780.avif 780w, /rushrents/img/k/mercedes-amg-g-63-1080.avif 1080w" sizes="(min-width: 1000px) calc(min(100vw - 80px, 1240px) - 464px), (min-width: 640px) calc(100vw - 64px), 100vw"><img class="gal-dia is-actief" id="hoofdfoto" src="/rushrents/media/mercedes-amg-g-63.webp" alt="Mercedes-AMG G 63" width="840" height="560" fetchpriority="high"></picture></div></div>
       <ol class="voortgang" id="voortgang" aria-label="Stappen van je reservatie">
         <li data-stap="periode"><a href="#periode">Periode</a></li>
         <li data-stap="extras"><a href="#extras">Extra's</a></li>
@@ -45,7 +45,7 @@
       <p class="fout res-fout" id="res-fout" role="alert" hidden></p>
       <div class="stap-doos" id="stap-doos"><div class="stap" id="stap"></div></div>
     </div>
-    <aside class="res-rechts" id="overzicht" aria-label="Je reservatie"></aside>
+    <aside class="res-rechts lichtrand" id="overzicht" aria-label="Je reservatie"></aside>
   </div>
 </main>
 
@@ -54,7 +54,7 @@
 
 <footer class="voet" id="contact">
   <div class="wrap voet-in">
-    <img class="voet-logo" src="/rushrents/img/logo-vol.svg" alt="Rush Rents autoverhuur" width="311" height="197" loading="lazy">
+    <a class="voet-logo" href="/rushrents/" aria-label="Rush Rents, naar de startpagina"><img src="/rushrents/img/logo-rr.svg" alt="" width="174" height="146" loading="lazy"></a>
     <nav class="voet-kol is-menu" aria-label="Voetmenu">
       <h2>Site</h2>
       <a href="/rushrents/#wagens">Wagens</a>
@@ -71,10 +71,11 @@
       <h2>Volg Rush Rents</h2>
       <div class="socials" id="socials"></div>
     </div>
-    <div class="voet-onder">
-      <p id="voet-bedrijf" hidden></p>
-      <nav aria-label="Juridisch"><a href="/rushrents/voorwaarden/" data-voorwaarden-link hidden>Huurvoorwaarden</a><a href="/rushrents/fotocredits/">Fotocredits</a></nav>
-    </div>
+  </div>
+  <div class="voet-merk" aria-hidden="true" data-onthul></div>
+  <div class="wrap voet-onder">
+    <p id="voet-bedrijf" hidden></p>
+    <nav aria-label="Juridisch"><a href="/rushrents/voorwaarden/" data-voorwaarden-link hidden>Huurvoorwaarden</a><a href="/rushrents/fotocredits/">Fotocredits</a></nav>
   </div>
 </footer>
 

@@ -26,7 +26,7 @@ html.zonder-overgang .gal-baan { animation: foto-open .7s var(--masker) both; }
 
 /* stappen bovenaan: zelfde taal als de tabs van de vloot */
 .voortgang { display: flex; gap: 24px; box-shadow: inset 0 -1px 0 var(--lijn); overflow-x: auto; scrollbar-width: none; }
-.voortgang a { display: flex; align-items: center; height: 44px; font-size: 14px; color: var(--dim); text-decoration: none; white-space: nowrap; box-shadow: inset 0 -1px 0 transparent; transition: color .2s var(--status), box-shadow .2s var(--status); }
+.voortgang a { display: flex; align-items: center; height: 44px; min-width: 44px; font-size: 14px; color: var(--dim); text-decoration: none; white-space: nowrap; box-shadow: inset 0 -1px 0 transparent; transition: color .2s var(--status), box-shadow .2s var(--status); }
 .voortgang li.is-af a { color: var(--mut); }
 .voortgang li.is-nu a { color: var(--tx); box-shadow: inset 0 -1px 0 var(--tx); }
 .voortgang.is-klaar { pointer-events: none; }
@@ -65,12 +65,21 @@ html.zonder-overgang .gal-baan { animation: foto-open .7s var(--masker) both; }
 .ov .tekstknop { justify-self: start; margin-top: 8px; }
 
 /* vaste balk onderaan op gsm: prijsregel en knop */
+/* reserveerbalk (component 6): van glas, met bovenaan een lijn die toont hoe ver je bent (een kwart per stap; de stap komt uit de
+   stappenrij bovenaan, zonder script). De knop is 48 px hoog en staat altijd binnen duimbereik. */
 .res-voet { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 12px var(--goot) max(12px, env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--lijn); }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .res-voet { background: rgba(8, 8, 10, .78); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+}
+.res-voet::before { content: ''; position: absolute; inset: -1px 0 auto 0; height: 1px; background: var(--tx); transform-origin: 0 50%; scale: var(--stap, .25) 1; transition: scale .5s var(--masker); }
+body:has(#voortgang [data-stap="extras"].is-nu) .res-voet { --stap: .5; }
+body:has(#voortgang [data-stap="gegevens"].is-nu) .res-voet { --stap: .75; }
+body:has(#voortgang [data-stap="controleren"].is-nu) .res-voet { --stap: 1; }
 .res-voet .som { flex: 1; min-width: 0; line-height: 1.3; display: grid; }
 .res-voet .som strong { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .res-voet .som span { font-size: 13px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .res-voet .btn { flex: none; height: 48px; padding: 0 20px; min-width: 132px; }
-.res-pagina .voet { padding-bottom: 104px; }
+.res-pagina .voet { padding-bottom: 76px; }
 
 /* leeftijd: eigen keuzelijst */
 .lft-veld { height: 52px; width: 100%; max-width: 240px; display: flex; align-items: center; justify-content: space-between; text-align: left; padding: 0 14px; border: 1px solid var(--lijn-sterk); border-radius: 2px; font-size: 16px; color: var(--tx); transition: border-color .2s var(--status); }
@@ -103,10 +112,11 @@ html.zonder-overgang .gal-baan { animation: foto-open .7s var(--masker) both; }
   .res-kop { margin-bottom: 28px; }
   .res-in { grid-template-columns: minmax(0, 1fr) 400px; gap: 64px; }
   .res-links { gap: 32px; }
-  .res-rechts { display: block; position: sticky; top: 88px; min-height: 420px; }
+  /* de samenvatting is een paneel met dezelfde rand die het licht vangt als de wagenfoto's */
+  .res-rechts { display: block; position: sticky; top: 88px; min-height: 420px; padding: 28px 28px 24px; border-radius: 4px; background: linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .012)); }
   .res-voet { display: none; }
   .alleen-smal { display: none; }
-  .res-pagina .voet { padding-bottom: 32px; }
+  .res-pagina .voet { padding-bottom: 0; }
   .voortgang { gap: 28px; }
   /* galerij: alle foto's op elkaar, de actieve zichtbaar */
   .gal-baan { display: grid; overflow: hidden; scroll-snap-type: none; }

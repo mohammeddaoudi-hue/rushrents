@@ -27,9 +27,14 @@ export const waUrl = (tekst) => `https://wa.me/${CONFIG.whatsapp}?text=${encodeU
 export const waVraag = (naam = '') => waUrl(naam ? `Hallo Rush Rents, ik heb een vraag over de ${naam}.` : 'Hallo Rush Rents, ik heb een vraag over het huren van een wagen.');
 export const plaats = () => (CONFIG.adres ? `${CONFIG.adres}, ${CONFIG.locatie}` : CONFIG.locatie || 'Kortrijk');
 
-// navigatie: na 80 px scrollen lager en effen (pagina's zonder hero zijn dat vanaf het begin: klasse is-vast)
+// navigatie: na 80 px scrollen lager en van glas (pagina's zonder hero zijn dat vanaf het begin: klasse is-vast). De haarlijn onderaan de balk
+// toont hoe ver je in de pagina bent (--lees, van 0 tot 1); één keer per beeld bijgewerkt.
 const nav = $('.nav');
-if (nav && !nav.classList.contains('is-vast')) { const zet = () => nav.classList.toggle('is-scroll', scrollY > 80); addEventListener('scroll', zet, { passive: true }); zet(); }
+if (nav && !nav.classList.contains('is-vast')) {
+  let loopt = false;
+  const zet = () => { loopt = false; nav.classList.toggle('is-scroll', scrollY > 80); const max = document.documentElement.scrollHeight - innerHeight; nav.style.setProperty('--lees', max > 0 ? Math.min(1, scrollY / max).toFixed(4) : '0'); };
+  addEventListener('scroll', () => { if (!loopt) { loopt = true; requestAnimationFrame(zet); } }, { passive: true }); zet();
+}
 // zolang de hero in beeld is, toont de navigatie alleen het monogram; daarna komt het woordmerk erbij
 const hero = $('.hero');
 if (nav && hero && 'IntersectionObserver' in window) new IntersectionObserver(([e]) => nav.classList.toggle('boven-hero', e.isIntersecting), { rootMargin: '-120px 0px 0px 0px' }).observe(hero);

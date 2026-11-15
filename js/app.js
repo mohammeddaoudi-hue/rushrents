@@ -2,6 +2,7 @@
 import { loadFleet, loadAvailability, checkPeriod, uren } from './data.js';
 import { getal, euro } from './prijs.js';
 import { CONFIG, $, $$, h, ico, moment, startBasis, onthul } from './basis.js';
+import { fotoSet } from './fotos.js';
 
 const staat = { wagens: [], beschikbaarheid: null, vandaag: '', filter: 'Alle', periode: null, vrij: null };
 // De periode staat hier alleen als de bezoeker ze zelf koos (in de kalender van een wagen of hierboven). Zonder keuze staat er geen status op de kaarten.
@@ -21,11 +22,16 @@ function kaartStatus(w) {
 }
 /** de foto van de aangeklikte kaart loopt over in de hoofdfoto van de wagenpagina (en terug) */
 function merkFoto(id) { for (const f of $$('.car-foto')) f.style.viewTransitionName = f.closest('.car').dataset.id === id ? 'wagenfoto' : ''; }
+// hoe breed een kaart op het scherm staat (voor de keuze van de fotobreedte): de eerste twee zijn groter
+const MAAT_GROOT = '(min-width: 1000px) min(608px, 50vw), (min-width: 640px) 46vw, calc(100vw - 40px)', MAAT_KLEIN = '(min-width: 1000px) min(398px, 32vw), (min-width: 640px) 46vw, calc(100vw - 40px)';
 function kaart(w, i) {
-  const s = kaartStatus(w), feiten = [w.leeftijd, w.rijbewijs && `Rijbewijs ${w.rijbewijs}`, w.platen].filter(Boolean);
+  const s = kaartStatus(w), feiten = [w.categorie, w.leeftijd, w.rijbewijs && `Rijbewijs ${w.rijbewijs}`, w.platen].filter(Boolean);
+  const set = w.hoofdfoto ? fotoSet(w.hoofdfoto) : ''; // kleinere versies (avif); de foto zelf blijft de terugval
   const vooraf = () => { if (!document.querySelector(`link[data-vooraf="${w.id}"]`)) document.head.append(h('link', { rel: 'prefetch', href: reserveer(w), 'data-vooraf': w.id })); };
   return h('a', { class: 'car' + (i < 2 ? ' is-groot' : ''), href: reserveer(w), 'data-id': w.id, 'data-onthul': true, onpointerenter: vooraf, ontouchstart: vooraf, onclick: () => merkFoto(w.id) },
-    h('span', { class: 'car-media' }, w.hoofdfoto ? h('img', { class: 'car-foto', src: '/rushrents/media/' + w.hoofdfoto, alt: '', decoding: 'async', loading: i < 2 ? 'eager' : 'lazy', width: 840, height: 560 }) : null),
+    h('span', { class: 'car-media' },
+      w.hoofdfoto ? h('picture', {}, set ? h('source', { type: 'image/avif', srcset: set, sizes: i < 2 ? MAAT_GROOT : MAAT_KLEIN }) : null, h('img', { class: 'car-foto', src: '/rushrents/media/' + w.hoofdfoto, alt: '', decoding: 'async', loading: 'lazy', width: 840, height: 560 })) : null,
+      h('span', { class: 'car-rand', 'aria-hidden': 'true' })),
     h('span', { class: 'car-body' },
       h('h3', { class: 'car-naam', text: w.naam }),
       h('span', { class: 'car-prijs' }, ...(getal(w.prijsDag) ? ['vanaf ', h('strong', { text: euro(getal(w.prijsDag)) }), ' / dag'] : [])),
@@ -51,6 +57,11 @@ async function zetPeriode(p) {
   if (p) { try { staat.vrij = await checkPeriod(p); } catch { staat.periode = null; bewaar(); } }
   toonVloot(true);
 }
+// het lichtpunt op de rand van een wagenfoto volgt de aanwijzer (alleen met een muis; de rand zelf staat in css/site.css)
+if (matchMedia('(hover: hover)').matches) $('#cars').addEventListener('pointermove', (e) => {
+  const m = e.target.closest?.('.car')?.querySelector('.car-media'); if (!m) return;
+  const r = m.getBoundingClientRect(); m.style.setProperty('--mx', Math.round(e.clientX - r.left) + 'px'); m.style.setProperty('--my', Math.round(e.clientY - r.top) + 'px');
+}, { passive: true });
 const pv = { van: $('#pv-van'), tot: $('#pv-tot'), vanUur: $('#pv-van-uur'), totUur: $('#pv-tot-uur'), vorm: $('#periode-vorm'), fout: $('#pv-fout') };
 $('[data-periode-wis]').addEventListener('click', () => { pv.vorm.hidden = true; zetPeriode(null); });
 $('[data-periode-wijzig]').addEventListener('click', (e) => {
@@ -65,10 +76,10 @@ pv.vorm.addEventListener('submit', async (e) => {
   catch (err) { pv.fout.textContent = err.message; pv.fout.hidden = false; }
 });
 
-// ---- veelgestelde vragen: alleen vragen met een antwoord; openen met een hoogte-overgang ----------
+// ---- veelgestelde vragen: alleen vragen met een antwoord; openen met een hoogte-overgang, de plus wordt een min ----------
 function vraag(x, i) {
   const paneel = h('div', { class: 'vraag-paneel', id: 'antwoord-' + i, role: 'region', inert: true }, h('div', {}, h('p', { text: x.antwoord })));
-  const knop = h('button', { type: 'button', class: 'vraag-knop', 'aria-expanded': 'false', 'aria-controls': 'antwoord-' + i }, h('span', { text: x.vraag }), ico('chevron'));
+  const knop = h('button', { type: 'button', class: 'vraag-knop', 'aria-expanded': 'false', 'aria-controls': 'antwoord-' + i }, h('span', { text: x.vraag }), h('span', { class: 'vraag-teken', 'aria-hidden': 'true' }));
   const el = h('div', { class: 'vraag' }, h('h3', {}, knop), paneel);
   knop.addEventListener('click', () => { const open = !el.classList.contains('is-open'); el.classList.toggle('is-open', open); knop.setAttribute('aria-expanded', String(open)); paneel.inert = !open; });
   return el;
