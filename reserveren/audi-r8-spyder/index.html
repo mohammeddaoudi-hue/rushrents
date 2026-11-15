@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="nl-BE">
+<head>
+<meta charset="utf-8">
+<meta name="rr-modus" content="statisch">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Audi R8 Spyder reserveren · Rush Rents</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#08080a">
+<link rel="icon" href="/rushrents/img/logo-rr.svg" type="image/svg+xml">
+<link rel="preload" as="font" type="font/woff2" href="/rushrents/fonts/Archivo-Variable.woff2" crossorigin>
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="/rushrents/css/site.css">
+<link rel="stylesheet" href="/rushrents/css/reserveren.css">
+<script src="/rushrents/js/overgang.js"></script>
+</head>
+<body class="res-pagina">
+<header class="nav is-vast">
+  <div class="wrap nav-in">
+    <a class="logo" href="/rushrents/" aria-label="Rush Rents, naar de startpagina">
+      <img class="logo-rr" src="/rushrents/img/logo-rr.svg" alt="" width="174" height="146">
+      <img class="logo-woord" src="/rushrents/img/logo-woord.svg" alt="Rush Rents" width="311" height="29">
+    </a>
+    <nav class="nav-links" aria-label="Hoofdmenu"><a href="/rushrents/#wagens">Alle wagens</a><a href="/rushrents/reservatie/">Mijn reservatie</a></nav>
+    <div class="nav-acties">
+      <a class="ico-link toon-altijd" data-wa href="/rushrents/" target="_blank" rel="noopener" aria-label="Stuur een bericht via WhatsApp"><svg class="ico" aria-hidden="true"><use href="/rushrents/img/iconen.svg#whatsapp"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap res" id="res">
+  <div class="res-kop">
+    <a class="terug" href="/rushrents/#wagens"><svg class="ico" aria-hidden="true"><use href="/rushrents/img/iconen.svg#pijl-links"/></svg>Alle wagens</a>
+    <h1 id="res-naam">Audi R8 Spyder</h1>
+  </div>
+  <div class="res-in">
+    <div class="res-links">
+      <div class="galerij" id="galerij"><div class="gal-baan" id="gal-baan"><img class="gal-dia is-actief" id="hoofdfoto" src="/rushrents/media/audi-r8-spyder.webp" alt="Audi R8 Spyder" width="840" height="560" fetchpriority="high"></div></div>
+      <ol class="voortgang" id="voortgang" aria-label="Stappen van je reservatie">
+        <li data-stap="periode"><a href="#periode">Periode</a></li>
+        <li data-stap="extras"><a href="#extras">Extra's</a></li>
+        <li data-stap="gegevens"><a href="#gegevens">Gegevens</a></li>
+        <li data-stap="controleren"><a href="#controleren">Controleren</a></li>
+      </ol>
+      <p class="fout res-fout" id="res-fout" role="alert" hidden></p>
+      <div class="stap-doos" id="stap-doos"><div class="stap" id="stap"></div></div>
+    </div>
+    <aside class="res-rechts" id="overzicht" aria-label="Je reservatie"></aside>
+  </div>
+</main>
+
+<div class="res-voet" id="res-voet" hidden></div>
+<p class="vh" id="lees-voor" aria-live="polite"></p>
+
+<footer class="voet" id="contact">
+  <div class="wrap voet-in">
+    <img class="voet-logo" src="/rushrents/img/logo-vol.svg" alt="Rush Rents autoverhuur" width="311" height="197" loading="lazy">
+    <nav class="voet-kol is-menu" aria-label="Voetmenu">
+      <h2>Site</h2>
+      <a href="/rushrents/#wagens">Wagens</a>
+      <a href="/rushrents/#huren">Zo huur je</a>
+      <a href="/rushrents/reservatie/">Mijn reservatie</a>
+    </nav>
+    <div class="voet-kol is-contact">
+      <h2>Contact</h2>
+      <a data-wa href="/rushrents/" target="_blank" rel="noopener"><svg class="ico ico-wa" aria-hidden="true"><use href="/rushrents/img/iconen.svg#whatsapp"/></svg><span>WhatsApp <span data-telefoon></span></span></a>
+      <a data-mail href="/rushrents/" hidden></a>
+      <span data-locatie-lang>Kortrijk</span>
+    </div>
+    <div class="voet-kol is-volg">
+      <h2>Volg Rush Rents</h2>
+      <div class="socials" id="socials"></div>
+    </div>
+    <div class="voet-onder">
+      <p id="voet-bedrijf" hidden></p>
+      <nav aria-label="Juridisch"><a href="/rushrents/voorwaarden/" data-voorwaarden-link hidden>Huurvoorwaarden</a><a href="/rushrents/fotocredits/">Fotocredits</a></nav>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="/rushrents/js/reserveren.js"></script>
+</body>
+</html>
