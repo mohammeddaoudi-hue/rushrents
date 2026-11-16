@@ -502,7 +502,7 @@ button.dag:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--lijn-knop); 
 .voet-onder { padding-bottom: calc(28px + 64px); }
 @media (prefers-reduced-motion: reduce) { .snel, .snel-optie, .snel-knop .ico { translate: none !important; scale: 1 !important; rotate: none !important; } }
 
-/* DRIVE THE DREAM (dictaat Mohammed, 16 nov): één regel boven RUSHRENTS, precies even breed als het woordmerk (de letters verdelen zich
+/* DRIVE THE DREAM (subkop, 16 nov): één regel boven RUSHRENTS, precies even breed als het woordmerk (de letters verdelen zich
    over die breedte), in de brede Archivo. De rij is een venster met onderaan een lichtlijn: in js/intro.js trekt de lijn open vanuit
    het midden, rijzen de letters van achter de lijn op (van het midden naar buiten, ze worden breder terwijl ze stijgen) en trekt de lijn
    zich daarna terug naar de randen. Zonder script of bij "minder beweging" staat de regel er gewoon. */
