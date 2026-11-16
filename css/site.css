@@ -94,11 +94,10 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
 .nav::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 120px; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(5, 5, 6, .6), rgba(5, 5, 6, 0)); transition: opacity .3s var(--status); }
 .nav.is-scroll, .nav.is-vast { height: calc(var(--kop-klein) + env(safe-area-inset-top, 0px)); background: var(--bg); border-bottom-color: var(--lijn); }
 .nav.is-scroll::before, .nav.is-vast::before { opacity: 0; }
-/* navigatie (component 1): na het scrollen is de balk dicht (97% dekkend, met een waas erachter: er is geen tekst of foto doorheen te zien), tot boven in de veilige zone van het toestel (env(safe-area-inset-top)); boven de hero blijft ze doorzichtig, en onderaan loopt een haarlijn mee met hoe ver
-   je in de pagina bent (--lees, gezet in js/basis.js). Kan de browser geen glas, dan blijft de balk effen. */
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .nav.is-scroll, .nav.is-vast { background: rgba(8, 8, 10, .97); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
-}
+/* navigatie: na het scrollen is de balk effen zwart, zonder doorzicht. De schaduw zonder vervaging (400 px groter, 400 px omhoog) trekt dat zwart naar boven door, zodat ook
+   de zone boven de balk (statusbalk, terugveren van iOS) zwart is. Boven de hero blijft de balk doorzichtig. */
+.nav.is-scroll, .nav.is-vast { background: var(--bg); box-shadow: 0 -400px 0 400px var(--bg); }
+
 .nav::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--tx); transform-origin: 0 50%; scale: var(--lees, 0) 1; opacity: 0; pointer-events: none; transition: opacity .3s var(--status); }
 .nav.is-scroll::after { opacity: .6; }
 .nav-in { display: flex; align-items: center; gap: 16px; height: 100%; }
@@ -148,8 +147,8 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
   min-height: var(--hh); }
 .hero-toneel { position: absolute; inset: 0; z-index: -1; container-type: size; overflow: hidden; animation: verschijn .8s var(--status) both; }
 /* --tb en --th: breedte en hoogte van het toneel; --dak-y: waar de daklijn in het toneel ligt (de foto vult het toneel, onderaan verankerd) */
-.hero-kop, .hero-toneel img { --tb: 100vw; --th: var(--hh); --dak-y: calc(var(--th) - var(--dak) * max(var(--tb) * var(--beeld-v), var(--th))); --mb2: min(var(--tb) - 2 * var(--goot), 1240px); }
-@supports (width: 1cqw) { .hero-kop, .hero-toneel img { --tb: 100cqw; --th: 100cqh; } }
+.hero-kop, .hero-droom, .hero-toneel img { --tb: 100vw; --th: var(--hh); --dak-y: calc(var(--th) - var(--dak) * max(var(--tb) * var(--beeld-v), var(--th))); --mb2: min(var(--tb) - 2 * var(--goot), 1240px); }
+@supports (width: 1cqw) { .hero-kop, .hero-droom, .hero-toneel img { --tb: 100cqw; --th: 100cqh; } }
 .hero-toneel img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 100%; transform-origin: 50% var(--dak-y); }
 .hero-kop { position: absolute; top: calc(var(--dak-y) - (1 - var(--overlap)) * var(--mb2) * var(--merk-v)); left: 0; right: 0; width: var(--mb2); margin-inline: auto; line-height: 0; }
 .hero-merk { display: block; width: 100%; height: auto; color: #fff; }
@@ -165,7 +164,7 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
 @media (max-aspect-ratio: 11/10) {
   .hero { --onder: calc(20px + env(safe-area-inset-bottom, 0px));
     --hh: max(100svh, calc(100vw * var(--beeld-v-m) * var(--dak-m) + var(--kop) + 16px + (1 - var(--overlap)) * var(--mh))); }
-  .hero-kop, .hero-toneel img { --dak-y: calc(var(--th) - var(--dak-m) * max(var(--tb) * var(--beeld-v-m), var(--th))); }
+  .hero-kop, .hero-droom, .hero-toneel img { --dak-y: calc(var(--th) - var(--dak-m) * max(var(--tb) * var(--beeld-v-m), var(--th))); }
   .hero-toneel::after { inset: 72% 0 0 0; background: linear-gradient(0deg, rgba(8, 8, 10, 1), rgba(8, 8, 10, .8) 14%, rgba(8, 8, 10, 0)); }
 }
 /* een liggende gsm (laag scherm): de knop staat onderaan de hero in plaats van over de neus van de wagen */
@@ -468,3 +467,50 @@ button.dag:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--lijn-knop); 
   /* geen intro: de hero verschijnt met één fade van 300 ms */
   html:not(.intro-gezien) .hero-toneel, html:not(.intro-gezien) .hero-in { animation: verschijn .3s var(--status) both !important; }
 }
+
+
+/* snelknop rechtsonder: vast in beeld zodra de hero voorbij is (op pagina's zonder hero meteen). Eén tik opent twee keuzes, Bellen en
+   WhatsApp; ze komen met een korte veer omhoog uit de knop, de ene 50 ms na de andere. Nog een tik, Escape of een tik ernaast sluit. */
+.snel { position: fixed; z-index: 35; right: max(16px, calc(env(safe-area-inset-right, 0px) + 12px)); bottom: calc(max(16px, calc(env(safe-area-inset-bottom, 0px) + 8px)) + var(--snel-onder, 0px));
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none;
+  opacity: 0; translate: 0 16px; scale: .9; transition: opacity .3s var(--status), translate .45s cubic-bezier(.16, 1, .3, 1), scale .45s cubic-bezier(.16, 1, .3, 1), visibility 0s linear .45s; visibility: hidden; }
+.snel.is-zicht { opacity: 1; translate: 0 0; scale: 1; visibility: visible; transition-delay: 0s; }
+.snel.is-zicht .snel-knop { pointer-events: auto; }
+.snel-knop { position: relative; width: 56px; height: 56px; border-radius: 2px; display: grid; place-items: center; background: var(--tx); color: var(--inkt); box-shadow: 0 8px 24px rgba(0, 0, 0, .45), 0 0 0 1px rgba(0, 0, 0, .08); transition: scale .2s var(--status), box-shadow .2s var(--status); }
+.snel-knop:active { scale: .94; }
+.snel-knop .ico { grid-area: 1 / 1; width: 22px; height: 22px; transition: opacity .25s var(--status), rotate .4s cubic-bezier(.16, 1, .3, 1), scale .4s cubic-bezier(.16, 1, .3, 1); }
+.snel-knop .is-dicht { opacity: 0; rotate: -90deg; scale: .6; }
+.snel.is-open .snel-knop .is-open-ico { opacity: 0; rotate: 90deg; scale: .6; }
+.snel.is-open .snel-knop .is-dicht { opacity: 1; rotate: 0deg; scale: 1; }
+.snel-keuze { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.snel-optie { display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 20px 0 16px; background: var(--tx); color: var(--inkt); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; border-radius: 2px; box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+  opacity: 0; translate: 0 14px; scale: .85; transform-origin: 100% 100%; pointer-events: none; transition: opacity .18s var(--status), translate .18s var(--status), scale .18s var(--status); }
+.snel-optie .ico { width: 20px; height: 20px; }
+.snel.is-open .snel-optie { opacity: 1; translate: 0 0; scale: 1; pointer-events: auto; transition: opacity .25s var(--status), translate .42s cubic-bezier(.16, 1, .3, 1), scale .42s cubic-bezier(.16, 1, .3, 1); }
+.snel.is-open .snel-optie:nth-child(1) { transition-delay: 50ms; }
+.snel.is-open .snel-optie:nth-child(2) { transition-delay: 0ms; }
+@media (hover: hover) { .snel-knop:hover { box-shadow: 0 10px 28px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .08); } .snel-optie:hover { background: #fff; } }
+/* boven de reserveerbalk van de wagenpagina (gsm) */
+.res-pagina .snel { --snel-onder: 76px; }
+@media (min-width: 1000px) { .res-pagina .snel { --snel-onder: 0px; } .snel { right: 24px; bottom: 24px; } }
+/* de voet houdt onderaan plaats vrij, zodat de knop geen link bedekt */
+.voet-onder { padding-bottom: calc(28px + 64px); }
+@media (prefers-reduced-motion: reduce) { .snel, .snel-optie, .snel-knop .ico { translate: none !important; scale: 1 !important; rotate: none !important; } }
+
+/* DRIVE THE DREAM (dictaat Mohammed, 16 nov): één regel boven RUSHRENTS, precies even breed als het woordmerk (de letters verdelen zich
+   over die breedte), in de brede Archivo. De rij is een venster met onderaan een lichtlijn: in js/intro.js trekt de lijn open vanuit
+   het midden, rijzen de letters van achter de lijn op (van het midden naar buiten, ze worden breder terwijl ze stijgen) en trekt de lijn
+   zich daarna terug naar de randen. Zonder script of bij "minder beweging" staat de regel er gewoon. */
+.hero-droom { --fs: clamp(13px, calc(var(--mb2) * .026), 22px); position: absolute; left: 0; right: 0; width: var(--mb2); margin: 0 auto; line-height: 0;
+  top: calc(var(--dak-y) - (1 - var(--overlap)) * var(--mb2) * var(--merk-v) - var(--fs) * 2.3); }
+.droom-rij { position: relative; width: min(100%, calc(var(--fs) * 27)); margin-inline: auto; display: flex; justify-content: space-between; align-items: flex-end; overflow: hidden; height: calc(var(--fs) * 1.5); padding-bottom: calc(var(--fs) * .4); box-sizing: border-box;
+  font-family: var(--font); font-size: var(--fs); font-weight: 400; font-stretch: 125%; line-height: 1; letter-spacing: 0; color: #fff; }
+.droom-rij .l { display: block; transform-origin: 50% 100%; }
+.droom-rij .s { width: .6em; }
+.droom-lijn { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; display: flex; pointer-events: none; }
+.droom-lijn i { flex: 1; background: rgba(255, 255, 255, .9); transform: scaleX(0); }
+.droom-lijn i:first-child { transform-origin: 100% 50%; }
+.droom-lijn i:last-child { transform-origin: 0% 50%; }
+html.droom-wacht:not(.droom-klaar) .droom-rij .l { transform: translateY(180%) scaleX(.7); }
+/* liggende gsm: het woordmerk staat naast het logo bovenaan, er is geen plaats boven */
+@media (max-height: 520px) and (min-aspect-ratio: 11/10) { .hero-droom { display: none; } }

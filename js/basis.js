@@ -27,12 +27,12 @@ export const waUrl = (tekst) => `https://wa.me/${CONFIG.whatsapp}?text=${encodeU
 export const waVraag = (naam = '') => waUrl(naam ? `Hallo Rush Rents, ik heb een vraag over de ${naam}.` : 'Hallo Rush Rents, ik heb een vraag over het huren van een wagen.');
 export const plaats = () => (CONFIG.adres ? `${CONFIG.adres}, ${CONFIG.locatie}` : CONFIG.locatie || 'Kortrijk');
 
-// navigatie: na 80 px scrollen lager en van glas (pagina's zonder hero zijn dat vanaf het begin: klasse is-vast). De haarlijn onderaan de balk
+// navigatie: zodra je scrollt (8 px) lager en effen zwart (pagina's zonder hero zijn dat vanaf het begin: klasse is-vast). De haarlijn onderaan de balk
 // toont hoe ver je in de pagina bent (--lees, van 0 tot 1); één keer per beeld bijgewerkt.
 const nav = $('.nav');
 if (nav && !nav.classList.contains('is-vast')) {
   let loopt = false;
-  const zet = () => { loopt = false; nav.classList.toggle('is-scroll', scrollY > 80); const max = document.documentElement.scrollHeight - innerHeight; nav.style.setProperty('--lees', max > 0 ? Math.min(1, scrollY / max).toFixed(4) : '0'); };
+  const zet = () => { loopt = false; nav.classList.toggle('is-scroll', scrollY > 8); const max = document.documentElement.scrollHeight - innerHeight; nav.style.setProperty('--lees', max > 0 ? Math.min(1, scrollY / max).toFixed(4) : '0'); };
   addEventListener('scroll', () => { if (!loopt) { loopt = true; requestAnimationFrame(zet); } }, { passive: true }); zet();
 }
 // "Contact" in de balk van de pagina's zonder menu: naar het contactblok in de voet, zonder het adres te wijzigen (op de wagenpagina zijn de
@@ -90,5 +90,32 @@ export async function startBasis() {
     $('[data-menu-sluit]').addEventListener('click', () => menu.close());
     for (const a of $$('.menu-links a')) a.addEventListener('click', () => menu.close());
   }
+  snelknop();
   return CONFIG;
+}
+
+/** snelknop rechtsonder: één tik toont Bellen en WhatsApp. Op de home verschijnt hij pas als de hero voor meer dan de helft voorbij is
+ *  (de hero heeft zijn eigen knop); op de andere pagina's staat hij er meteen. De beweging staat in css/site.css (.snel). */
+function snelknop() {
+  if (!CONFIG.whatsapp || $('.snel')) return;
+  const keuze = h('div', { class: 'snel-keuze', id: 'snel-keuze' },
+    h('a', { class: 'snel-optie', href: 'tel:+' + CONFIG.whatsapp }, ico('tel'), 'Bellen'),
+    h('a', { class: 'snel-optie', href: waVraag(), target: '_blank', rel: 'noopener' }, ico('whatsapp'), 'WhatsApp'));
+  const knop = h('button', { class: 'snel-knop', type: 'button', 'aria-expanded': 'false', 'aria-controls': 'snel-keuze', 'aria-label': 'Contact: bellen of WhatsApp' }, ico('tel', 'is-open-ico'), ico('kruis', 'is-dicht'));
+  const snel = h('div', { class: 'snel' }, keuze, knop);
+  for (const a of keuze.querySelectorAll('a')) a.tabIndex = -1;
+  document.body.append(snel);
+  const zet = (open) => {
+    snel.classList.toggle('is-open', open); knop.setAttribute('aria-expanded', String(open));
+    for (const a of keuze.querySelectorAll('a')) a.tabIndex = open ? 0 : -1;
+  };
+  knop.addEventListener('click', () => zet(!snel.classList.contains('is-open')));
+  for (const a of keuze.querySelectorAll('a')) a.addEventListener('click', () => setTimeout(() => zet(false), 300));
+  document.addEventListener('pointerdown', (e) => { if (!snel.contains(e.target)) zet(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && snel.classList.contains('is-open')) { zet(false); knop.focus(); } });
+  const held = $('.hero');
+  let loopt = false;
+  const kijk = () => { loopt = false; const zicht = !held || scrollY > held.offsetHeight * 0.5; snel.classList.toggle('is-zicht', zicht); if (!zicht) zet(false); };
+  addEventListener('scroll', () => { if (!loopt) { loopt = true; requestAnimationFrame(kijk); } }, { passive: true });
+  kijk();
 }

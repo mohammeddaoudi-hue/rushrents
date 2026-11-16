@@ -40,6 +40,33 @@ function duw(wacht) {
   for (const el of lagen()) { const a = el.animate({ transform: ['scale(1)', `scale(${inst.duw.schaal})`] }, { duration: inst.duw.ms, delay: wacht, easing: 'ease-out', fill: 'forwards' }); a.id = 'hero-duw'; }
 }
 
+/** DRIVE THE DREAM: de lichtlijn trekt open vanuit het midden, de letters rijzen van achter de lijn op (van het midden naar buiten) en
+ *  worden breder terwijl ze stijgen; daarna trekt de lijn zich terug naar de randen. Begint na "wacht" ms. Opnieuw aanroepen met een
+ *  kortere wachttijd (de intro wordt overgeslagen) start hem meteen, zolang hij nog niet begonnen is. */
+let droomStart = Infinity, droomAnim = [];
+function droom(wacht) {
+  const rij = $('.droom-rij');
+  if (!rij || rustig || !('animate' in Element.prototype)) { html.classList.add('droom-klaar'); return; }
+  const nu = performance.now();
+  if (nu >= droomStart || nu + wacht >= droomStart) return; // loopt al, of start al eerder
+  for (const a of droomAnim) a.cancel();
+  droomStart = nu + wacht; droomAnim = [];
+  const [links, rechts] = rij.querySelectorAll('.droom-lijn i');
+  const lijn = (el, binnen, buiten) => el.animate([
+    { transform: 'scaleX(0)', transformOrigin: binnen, easing: UIT, offset: 0 },
+    { transform: 'scaleX(1)', transformOrigin: binnen, offset: 0.36 },
+    { transform: 'scaleX(1)', transformOrigin: buiten, easing: OPEN, offset: 0.52 },
+    { transform: 'scaleX(0)', transformOrigin: buiten, offset: 1 },
+  ], { duration: 2000, delay: wacht, fill: 'both' });
+  droomAnim.push(lijn(links, '100% 50%', '0% 50%'), lijn(rechts, '0% 50%', '100% 50%'));
+  for (const l of rij.querySelectorAll('.l')) droomAnim.push(l.animate(
+    { transform: ['translateY(180%) scaleX(.7)', 'none'] }, // breder worden terwijl ze stijgen: een transform, dus zonder nieuwe opmaak per beeld
+    { duration: 1100, delay: wacht + 260 + Number(l.dataset.d) * 55, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' }));
+  for (const a of droomAnim) a.id = 'hero-droom'; // los van de intro (zoals de trage beweging): telt niet mee in de duur van de intro
+  // klaar: de eindtoestand staat in de CSS (html.droom-klaar), de animaties gaan weg zodat er niets blijft lopen
+  Promise.all(droomAnim.map((a) => a.finished)).then(() => { html.classList.add('droom-klaar'); for (const a of droomAnim) a.cancel(); droomAnim = []; }, () => {});
+}
+
 /** de voortgang van een cubic-bezier-curve op tijdstip t (0 tot 1) */
 function curve(tekst) {
   const [x1, y1, x2, y2] = tekst.match(/[\d.]+/g).map(Number);
@@ -63,6 +90,7 @@ function einde() {
   intro.style.display = '';
   for (const soort of SOORTEN) removeEventListener(soort, einde, true);
   duw(0); // is de intro overgeslagen voor ze startte, dan begint de trage beweging hier
+  droom(150);
 }
 /** de foto is er niet op tijd: geen intro, de plaat vervaagt in 300 ms */
 function vervaag() {
@@ -135,6 +163,7 @@ function start() {
   const woord = speel($('.hero-merk'), { clipPath: ['inset(100% 0 0 0)', 'inset(0 0 0 0)'] }, { duration: T.merk[1], delay: T.merk[0], easing: OPEN });
   const knop = speel($('.hero-in'), { opacity: [0, 1] }, { duration: T.knop[1], delay: T.knop[0], easing: ZACHT });
   duw(T.open[0] + T.open[1]);
+  droom(T.merk[0] + 550); // als RUSHRENTS voor twee derde open is
   html.classList.add('intro-loopt');
   // staat de foto er nog niet als ze in het beeldmerk moet verschijnen, dan stopt de intro hier
   const kijk = setInterval(() => {
@@ -149,4 +178,4 @@ if (html.classList.contains('met-intro') && intro) {
   for (const soort of SOORTEN) addEventListener(soort, einde, { capture: true, passive: true });
   const zichtbaar = document.visibilityState === 'visible' ? Promise.resolve() : new Promise((r) => addEventListener('visibilitychange', r, { once: true }));
   zichtbaar.then(() => Promise.race([gedecodeerd(), new Promise((r) => setTimeout(r, 600))])).then(start);
-} else gedecodeerd().then(() => duw(0)); // geen intro (tweede bezoek van de sessie): alleen de trage beweging
+} else { gedecodeerd().then(() => duw(0)); droom(350); } // geen intro (tweede bezoek van de sessie): de trage beweging en DRIVE THE DREAM

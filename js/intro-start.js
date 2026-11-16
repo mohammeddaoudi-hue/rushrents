@@ -4,6 +4,8 @@
   var d = document.documentElement, gezien = true, rustig = false;
   try { gezien = sessionStorage.getItem('rr.intro') === '1'; sessionStorage.setItem('rr.intro', '1'); } catch (e) { gezien = true; }
   try { rustig = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { rustig = false; }
+  // DRIVE THE DREAM wacht verborgen op zijn animatie (js/intro.js); na 6 s staat hij er hoe dan ook
+  if (!rustig && 'animate' in Element.prototype) { d.classList.add('droom-wacht'); setTimeout(function () { d.classList.add('droom-klaar'); }, 6000); }
   if (rustig) { if (gezien) d.classList.add('intro-gezien'); return; }
   if (gezien || location.hash || !('animate' in Element.prototype)) { d.classList.add('intro-gezien'); return; }
   d.classList.add('met-intro');
