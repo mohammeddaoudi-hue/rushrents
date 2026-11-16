@@ -35,6 +35,12 @@ if (nav && !nav.classList.contains('is-vast')) {
   const zet = () => { loopt = false; nav.classList.toggle('is-scroll', scrollY > 80); const max = document.documentElement.scrollHeight - innerHeight; nav.style.setProperty('--lees', max > 0 ? Math.min(1, scrollY / max).toFixed(4) : '0'); };
   addEventListener('scroll', () => { if (!loopt) { loopt = true; requestAnimationFrame(zet); } }, { passive: true }); zet();
 }
+// "Contact" in de balk van de pagina's zonder menu: naar het contactblok in de voet, zonder het adres te wijzigen (op de wagenpagina zijn de
+// #-adressen de stappen van de reservatie)
+for (const a of $$('a[data-naar]')) a.addEventListener('click', (e) => {
+  const doel = document.getElementById(a.dataset.naar); if (!doel) return;
+  e.preventDefault(); doel.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+});
 // zolang de hero in beeld is, toont de navigatie alleen het monogram; daarna komt het woordmerk erbij
 const hero = $('.hero');
 if (nav && hero && 'IntersectionObserver' in window) new IntersectionObserver(([e]) => nav.classList.toggle('boven-hero', e.isIntersecting), { rootMargin: '-120px 0px 0px 0px' }).observe(hero);
@@ -50,17 +56,9 @@ export function onthul() {
     if (!foto || foto.complete) return ga();
     foto.addEventListener('load', ga, { once: true }); foto.addEventListener('error', ga, { once: true }); setTimeout(ga, 1200);
   };
-  // wat samen in beeld komt en op dezelfde rij staat, volgt elkaar op: --trap is de plaats in de rij (0, 1, 2)
-  const zie = (io) => (en) => {
-    const nu = en.filter((e) => e.isIntersecting);
-    for (const e of nu) {
-      const r = e.boundingClientRect;
-      e.target.style.setProperty('--trap', nu.filter((x) => Math.abs(x.boundingClientRect.top - r.top) < 4 && x.boundingClientRect.left < r.left).length);
-      toon(e.target); io.unobserve(e.target);
-    }
-  };
+  const zie = (io) => (en) => { for (const e of en) if (e.isIntersecting) { toon(e.target); io.unobserve(e.target); } };
   const io = new IntersectionObserver((en) => zie(io)(en), { rootMargin: '0px 0px -8% 0px' });
-  const ioKaart = new IntersectionObserver((en) => zie(ioKaart)(en), { threshold: 0.25 }); // een wagenkaart opent pas als een kwart ervan in beeld is
+  const ioKaart = new IntersectionObserver((en) => zie(ioKaart)(en), { threshold: 0.25 }); // de uitgelichte wagenkaart opent pas als een kwart ervan in beeld is
   for (const el of els) { const r = el.getBoundingClientRect(); if (r.top < innerHeight && r.bottom > 0) el.classList.add('is-zicht'); else (el.matches('.car') ? ioKaart : io).observe(el); }
   document.documentElement.classList.add('onthul');
 }

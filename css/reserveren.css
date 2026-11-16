@@ -1,5 +1,5 @@
 /* Wagenpagina met reserveren in stappen, en "Mijn reservatie". Gsm: één kolom met een vaste balk onderaan. Desktop: links galerij en stappen, rechts een vaste samenvatting. */
-.res { padding: calc(var(--kop-klein) + 20px) 0 120px; }
+.res { padding: calc(var(--kop-klein) + env(safe-area-inset-top, 0px) + 20px) 0 120px; }
 .res-kop { display: grid; gap: 4px; margin-bottom: 20px; }
 .terug { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; color: var(--mut); text-decoration: none; transition: color .2s var(--status); }
 .terug:hover { color: var(--tx); }
@@ -16,11 +16,7 @@
 .gal-baan::-webkit-scrollbar { display: none; }
 .gal-baan:empty { background: var(--bg2); }
 .gal-dia { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
-#hoofdfoto { view-transition-name: wagenfoto; }
-/* rechtstreeks geopend of herladen (zonder overgang vanuit een wagenkaart, zie js/overgang.js): de hoofdfoto opent van onder naar boven,
-   zoals de foto's in de vloot. Met een overgang loopt de foto van de kaart over in de hoofdfoto en speelt dit niet. */
-@keyframes foto-open { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
-html.zonder-overgang .gal-baan { animation: foto-open .7s var(--masker) both; }
+#hoofdfoto { view-transition-name: wagenfoto; } /* de foto van de wagenkaart loopt over in de hoofdfoto; rechtstreeks geopend staat ze er meteen */
 .gal-teller { justify-self: end; font-size: 13px; color: var(--mut); min-height: 20px; }
 .gal-duimen { display: none; }
 
@@ -41,6 +37,11 @@ html.zonder-overgang .gal-baan { animation: foto-open .7s var(--masker) both; }
 .blok-kop { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .pv { display: grid; gap: 12px; }
 .pv .veld { grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 0; }
+/* gsm: de dag is een knop (geen invoerveld); het veld dat de volgende tik in de kalender zet, heeft een lichte rand */
+.veld-dag { flex: 1; min-width: 0; height: 100%; padding: 0 14px; text-align: left; font-size: 16px; color: var(--tx); white-space: nowrap; }
+.veld-dag.is-leeg { color: var(--dim); }
+.veld-rij.is-nu { border-color: var(--tx); }
+
 .rooster { display: grid; gap: 16px; }
 .wijzig-rij { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .optie { display: flex; align-items: center; gap: 14px; min-height: 56px; border-bottom: 1px solid var(--lijn); cursor: pointer; font-size: 16px; }
@@ -65,11 +66,11 @@ html.zonder-overgang .gal-baan { animation: foto-open .7s var(--masker) both; }
 .ov .tekstknop { justify-self: start; margin-top: 8px; }
 
 /* vaste balk onderaan op gsm: prijsregel en knop */
-/* reserveerbalk (component 6): van glas, met bovenaan een lijn die toont hoe ver je bent (een kwart per stap; de stap komt uit de
+/* reserveerbalk (component 6): bijna dicht (95% dekkend, met een waas erachter: er is geen tekst doorheen te lezen), met bovenaan een lijn die toont hoe ver je bent (een kwart per stap; de stap komt uit de
    stappenrij bovenaan, zonder script). De knop is 48 px hoog en staat altijd binnen duimbereik. */
 .res-voet { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 12px var(--goot) max(12px, env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--lijn); }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .res-voet { background: rgba(8, 8, 10, .78); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+  .res-voet { background: rgba(8, 8, 10, .95); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
 }
 .res-voet::before { content: ''; position: absolute; inset: -1px 0 auto 0; height: 1px; background: var(--tx); transform-origin: 0 50%; scale: var(--stap, .25) 1; transition: scale .5s var(--masker); }
 body:has(#voortgang [data-stap="extras"].is-nu) .res-voet { --stap: .5; }
@@ -80,6 +81,12 @@ body:has(#voortgang [data-stap="controleren"].is-nu) .res-voet { --stap: 1; }
 .res-voet .som span { font-size: 13px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .res-voet .btn { flex: none; height: 48px; padding: 0 20px; min-width: 132px; }
 .res-pagina .voet { padding-bottom: 76px; }
+/* liggende gsm (laag scherm): de navigatie scrolt mee weg en de balk is lager, zodat er genoeg scherm overblijft voor de pagina zelf */
+@media (max-height: 520px) and (min-aspect-ratio: 11/10) {
+  .res-pagina .nav { position: absolute; }
+  .res-voet { min-height: 56px; padding-top: 6px; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+  .res-voet .btn { height: 44px; }
+}
 
 /* leeftijd: eigen keuzelijst */
 .lft-veld { height: 52px; width: 100%; max-width: 240px; display: flex; align-items: center; justify-content: space-between; text-align: left; padding: 0 14px; border: 1px solid var(--lijn-sterk); border-radius: 2px; font-size: 16px; color: var(--tx); transition: border-color .2s var(--status); }
@@ -108,7 +115,7 @@ body:has(#voortgang [data-stap="controleren"].is-nu) .res-voet { --stap: 1; }
   .gal-baan { margin: 0; border-radius: 4px; }
 }
 @media (min-width: 1000px) {
-  .res { padding: calc(var(--kop-klein) + 32px) 0 128px; }
+  .res { padding: calc(var(--kop-klein) + env(safe-area-inset-top, 0px) + 32px) 0 128px; }
   .res-kop { margin-bottom: 28px; }
   .res-in { grid-template-columns: minmax(0, 1fr) 400px; gap: 64px; }
   .res-links { gap: 32px; }
@@ -124,6 +131,7 @@ body:has(#voortgang [data-stap="controleren"].is-nu) .res-voet { --stap: 1; }
   .gal-dia.is-actief { opacity: 1; z-index: 1; }
   .gal-teller { display: none; }
   .gal-duimen { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gal-duimen.is-plek { min-height: calc(88px * 2 / 3); } /* de plek van de rij staat vast voor de foto's er zijn */
   .gal-duim { width: 88px; aspect-ratio: 3 / 2; border-radius: 4px; overflow: hidden; opacity: .6; box-shadow: inset 0 0 0 1px transparent; transition: opacity .2s var(--status); position: relative; }
   .gal-duim img { width: 100%; height: 100%; object-fit: cover; }
   .gal-duim::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .2s var(--status); }

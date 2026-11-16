@@ -12,7 +12,6 @@
 <style>@view-transition{navigation:auto}</style>
 <link rel="stylesheet" href="/rushrents/css/site.css">
 <link rel="stylesheet" href="/rushrents/css/reserveren.css">
-<script src="/rushrents/js/overgang.js"></script>
 </head>
 <body class="res-pagina">
 <header class="nav is-vast">
@@ -23,7 +22,7 @@
     </a>
     <nav class="nav-links" aria-label="Hoofdmenu"><a href="/rushrents/#wagens">Alle wagens</a><a href="/rushrents/reservatie/">Mijn reservatie</a></nav>
     <div class="nav-acties">
-      <a class="ico-link toon-altijd" data-wa href="/rushrents/" target="_blank" rel="noopener" aria-label="Stuur een bericht via WhatsApp"><svg class="ico" aria-hidden="true"><use href="/rushrents/img/iconen.svg#whatsapp"/></svg></a>
+      <a class="nav-contact" href="#contact" data-naar="contact">Contact</a>
     </div>
   </div>
 </header>
@@ -35,7 +34,7 @@
   </div>
   <div class="res-in">
     <div class="res-links">
-      <div class="galerij" id="galerij"><div class="gal-baan" id="gal-baan"><picture class="gal-beeld"><source type="image/avif" srcset="/rushrents/img/k/rolls-royce-cullinan-480.avif 480w, /rushrents/img/k/rolls-royce-cullinan-780.avif 780w, /rushrents/img/k/rolls-royce-cullinan-1080.avif 1080w" sizes="(min-width: 1000px) calc(min(100vw - 80px, 1240px) - 464px), (min-width: 640px) calc(100vw - 64px), 100vw"><img class="gal-dia is-actief" id="hoofdfoto" src="/rushrents/media/rolls-royce-cullinan.webp" alt="Rolls-Royce Cullinan" width="840" height="560" fetchpriority="high"></picture></div></div>
+      <div class="galerij" id="galerij"><div class="gal-baan" id="gal-baan"><picture class="gal-beeld"><source type="image/avif" srcset="/rushrents/img/k/rolls-royce-cullinan-480.avif 480w, /rushrents/img/k/rolls-royce-cullinan-780.avif 780w, /rushrents/img/k/rolls-royce-cullinan-1080.avif 1080w" sizes="(min-width: 1000px) calc(min(100vw - 80px, 1240px) - 464px), (min-width: 640px) calc(100vw - 64px), 100vw"><img class="gal-dia is-actief" id="hoofdfoto" src="/rushrents/media/rolls-royce-cullinan.webp" alt="Rolls-Royce Cullinan" width="840" height="560" fetchpriority="high"></picture></div><p class="gal-teller" id="gal-teller" aria-hidden="true"></p></div>
       <ol class="voortgang" id="voortgang" aria-label="Stappen van je reservatie">
         <li data-stap="periode"><a href="#periode">Periode</a></li>
         <li data-stap="extras"><a href="#extras">Extra's</a></li>
@@ -63,7 +62,7 @@
     </nav>
     <div class="voet-kol is-contact">
       <h2>Contact</h2>
-      <a data-wa href="/rushrents/" target="_blank" rel="noopener"><svg class="ico ico-wa" aria-hidden="true"><use href="/rushrents/img/iconen.svg#whatsapp"/></svg><span>WhatsApp <span data-telefoon></span></span></a>
+      <a data-wa href="/rushrents/" target="_blank" rel="noopener">WhatsApp <span data-telefoon></span></a>
       <a data-mail href="/rushrents/" hidden></a>
       <span data-locatie-lang>Kortrijk</span>
     </div>

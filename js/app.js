@@ -22,32 +22,62 @@ function kaartStatus(w) {
 }
 /** de foto van de aangeklikte kaart loopt over in de hoofdfoto van de wagenpagina (en terug) */
 function merkFoto(id) { for (const f of $$('.car-foto')) f.style.viewTransitionName = f.closest('.car').dataset.id === id ? 'wagenfoto' : ''; }
-// hoe breed een kaart op het scherm staat (voor de keuze van de fotobreedte): de eerste twee zijn groter
-const MAAT_GROOT = '(min-width: 1000px) min(608px, 50vw), (min-width: 640px) 46vw, calc(100vw - 40px)', MAAT_KLEIN = '(min-width: 1000px) min(398px, 32vw), (min-width: 640px) 46vw, calc(100vw - 40px)';
-function kaart(w, i) {
-  const s = kaartStatus(w), feiten = [w.categorie, w.leeftijd, w.rijbewijs && `Rijbewijs ${w.rijbewijs}`, w.platen].filter(Boolean);
+// hoe breed een kaart op het scherm staat (voor de keuze van de fotobreedte): de eerste (uitgelicht) is groter; op gsm loopt de foto van rand tot rand
+const MAAT_GROOT = '(min-width: 1000px) min(790px, 62vw), (min-width: 640px) calc(100vw - 64px), 100vw', MAAT_KLEIN = '(min-width: 1000px) min(398px, 32vw), (min-width: 640px) 46vw, 100vw';
+const nr = (n) => String(n + 1).padStart(2, '0');
+/** i = plaats in de getoonde lijst (0 = uitgelicht), n = aantal getoonde wagens */
+function kaart(w, i, n) {
+  const s = kaartStatus(w), uit = i === 0, feiten = [w.categorie, w.leeftijd, w.rijbewijs && `Rijbewijs ${w.rijbewijs}`, w.platen].filter(Boolean);
   const set = w.hoofdfoto ? fotoSet(w.hoofdfoto) : ''; // kleinere versies (avif); de foto zelf blijft de terugval
   const vooraf = () => { if (!document.querySelector(`link[data-vooraf="${w.id}"]`)) document.head.append(h('link', { rel: 'prefetch', href: reserveer(w), 'data-vooraf': w.id })); };
-  return h('a', { class: 'car' + (i < 2 ? ' is-groot' : ''), href: reserveer(w), 'data-id': w.id, 'data-onthul': true, onpointerenter: vooraf, ontouchstart: vooraf, onclick: () => merkFoto(w.id) },
+  // alleen de eerste kaart van de hele vloot opent met het masker bij het scrollen (data-onthul); de andere staan er gewoon.
+  // Welke kaart uitgelicht staat en welk volgnummer ze draagt, zet filterVloot() (dat hangt af van het filter).
+  return h('a', { class: 'car' + (uit ? ' is-uitgelicht' : ''), href: reserveer(w), 'data-id': w.id, 'data-onthul': uit || null, onpointerenter: vooraf, ontouchstart: vooraf, onclick: () => merkFoto(w.id) },
     h('span', { class: 'car-media' },
-      w.hoofdfoto ? h('picture', {}, set ? h('source', { type: 'image/avif', srcset: set, sizes: i < 2 ? MAAT_GROOT : MAAT_KLEIN }) : null, h('img', { class: 'car-foto', src: '/rushrents/media/' + w.hoofdfoto, alt: '', decoding: 'async', loading: 'lazy', width: 840, height: 560 })) : null,
+      w.hoofdfoto ? h('picture', {}, set ? h('source', { type: 'image/avif', srcset: set, sizes: uit ? MAAT_GROOT : MAAT_KLEIN }) : null, h('img', { class: 'car-foto', src: '/rushrents/media/' + w.hoofdfoto, alt: '', decoding: 'async', loading: 'lazy', width: 840, height: 560 })) : null,
       h('span', { class: 'car-rand', 'aria-hidden': 'true' })),
     h('span', { class: 'car-body' },
-      h('h3', { class: 'car-naam', text: w.naam }),
-      h('span', { class: 'car-prijs' }, ...(getal(w.prijsDag) ? ['vanaf ', h('strong', { text: euro(getal(w.prijsDag)) }), ' / dag'] : [])),
-      h('span', { class: 'car-regel' + (w.actie ? ' is-actie' : ''), text: w.actie || feiten.join(' · ') }),
-      s?.vast ? null : h('span', { class: 'car-ga' }, 'Reserveren', ico('pijl')),
+      h('span', { class: 'car-kop' }, h('span', { class: 'car-nr', text: nr(i) + (uit && n > 1 ? ' / ' + nr(n - 1) : '') }), h('span', { class: 'car-lijn', 'aria-hidden': 'true' }), s?.vast ? null : h('span', { class: 'car-ga' }, 'Reserveren', ico('pijl'))),
+      h('span', { class: 'car-titel' }, h('h3', { class: 'car-naam', text: w.naam }), h('span', { class: 'car-prijs' }, ...(getal(w.prijsDag) ? ['vanaf ', h('strong', { text: euro(getal(w.prijsDag)) }), ' / dag'] : []))),
+      h('span', { class: 'car-feiten' }, ...feiten.map((f) => h('span', { class: 'car-feit', text: f })), w.actie ? h('span', { class: 'car-feit is-actie', text: w.actie }) : null),
       s && h('span', { class: 'car-status status' + (s.vrij ? ' is-ok' : ''), text: s.vrij ? 'Beschikbaar' : 'Niet beschikbaar' })));
 }
+// filter: één balk met vakken; het lichte vlak (.tabs-wijzer) glijdt naar het gekozen vak
 function toonFilters() {
   const cats = [...new Set(staat.wagens.map((w) => w.categorie))];
   if (!cats.includes(staat.filter)) staat.filter = 'Alle';
-  $('#filters').replaceChildren(...['Alle', ...cats].map((c) => h('button', { type: 'button', class: 'tab', 'aria-pressed': String(c === staat.filter), text: c, onclick: () => { staat.filter = c; toonFilters(); toonVloot(true); } })));
+  const baan = h('span', { class: 'tabs-baan' }, h('span', { class: 'tabs-wijzer', 'aria-hidden': 'true' }), ...['Alle', ...cats].map((c) => h('button', { type: 'button', class: 'tab', 'aria-pressed': String(c === staat.filter), text: c, onclick: () => { staat.filter = c; zetTab(); filterVloot(true); } })));
+  $('#filters').replaceChildren(baan);
+  zetTab();
+  requestAnimationFrame(() => requestAnimationFrame(() => baan.classList.add('is-klaar'))); // de eerste plaatsing gebeurt zonder beweging
 }
+function zetTab() {
+  const baan = $('.tabs-baan'); if (!baan) return;
+  for (const b of $$('.tab', baan)) b.setAttribute('aria-pressed', String(b.textContent === staat.filter));
+  const nu = $('.tab[aria-pressed="true"]', baan), wijzer = $('.tabs-wijzer', baan); if (!nu) return;
+  wijzer.style.width = nu.offsetWidth + 'px'; wijzer.style.translate = nu.offsetLeft + 'px 0';
+}
+addEventListener('resize', zetTab, { passive: true });
+document.fonts?.ready.then(zetTab); // de breedte van de vakken staat pas vast als het lettertype er is
+/** het filter verbergt kaarten; ze worden niet opnieuw gebouwd, dus de foto's blijven staan. De eerste zichtbare kaart staat uitgelicht en
+ *  de volgnummers tellen de zichtbare kaarten. meteen = geen masker meer op de uitgelichte kaart (na een keuze van de bezoeker). */
+function filterVloot(meteen = false) {
+  const zicht = $$('#cars .car').filter((k) => { const w = staat.wagens.find((x) => x.id === k.dataset.id); k.hidden = !(w && (staat.filter === 'Alle' || w.categorie === staat.filter)); if (meteen) k.classList.add('is-zicht'); return !k.hidden; });
+  zicht.forEach((k, i) => {
+    const uit = i === 0;
+    k.classList.toggle('is-uitgelicht', uit);
+    $('.car-nr', k).textContent = nr(i) + (uit && zicht.length > 1 ? ' / ' + nr(zicht.length - 1) : '');
+    // wordt een kaart uitgelicht, dan haalt de browser eerst de grotere foto op en wisselt daarna pas: zo staat de foto nooit leeg.
+    // (Een kaart die niet meer uitgelicht is, houdt haar grotere foto.)
+    const bron = $('source', k);
+    if (uit && bron && bron.getAttribute('sizes') !== MAAT_GROOT) { const proef = new Image(); proef.sizes = MAAT_GROOT; proef.srcset = bron.srcset; proef.onload = () => bron.setAttribute('sizes', MAAT_GROOT); }
+  });
+}
+/** bouwt alle kaarten: één keer bij de start, en opnieuw als de gekozen periode wijzigt (dan verandert de status op elke kaart) */
 function toonVloot(meteen = false) {
-  const kaarten = staat.wagens.filter((w) => staat.filter === 'Alle' || w.categorie === staat.filter).map(kaart);
-  if (meteen) for (const k of kaarten) k.classList.add('is-zicht');
+  const kaarten = staat.wagens.map((w, i, lijst) => kaart(w, i, lijst.length));
   $('#cars').replaceChildren(...kaarten);
+  filterVloot(meteen);
   $('#periode-regel').hidden = !staat.periode;
   if (staat.periode) $('[data-periode]').textContent = periodeTekst(staat.periode);
   if (!meteen) onthul();
@@ -85,12 +115,26 @@ function vraag(x, i) {
   return el;
 }
 
-// terug vanaf een wagenpagina: de hoofdfoto loopt terug naar haar kaart
+// terug vanaf een wagenpagina: de hoofdfoto loopt terug naar haar kaart, maar alleen als die kaart er al staat (terug in de geschiedenis
+// met de pagina uit het geheugen). Staat ze er niet, dan is er geen overgang met de foto: anders zweeft de foto van de wagen over de pagina.
 addEventListener('pagereveal', (e) => {
-  const van = globalThis.navigation?.activation?.from?.url;
+  const stap = globalThis.navigation?.activation, van = stap?.from?.url;
   if (!e.viewTransition || !van) return;
   const id = /\/reserveren\/([a-z0-9-]+)/.exec(new URL(van).pathname)?.[1];
-  if (id) merkFoto(id);
+  if (!id) return;
+  if ($(`.car[data-id="${id}"] .car-foto`)) merkFoto(id); else if (stap.navigationType === 'traverse') e.viewTransition.skipTransition();
+});
+
+// zacht scrollen alleen bij een klik op een link binnen deze pagina (#wagens, #huren ...). Bij het laden springt de pagina meteen naar haar
+// plek (html heeft geen scroll-behavior: smooth meer: "Alle wagens" vanaf een wagenpagina landde bovenaan en scrolde dan zichtbaar).
+addEventListener('click', (e) => {
+  const a = e.target.closest?.('a[href^="#"]');
+  if (!a || a.target === '_blank' || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  const naam = a.getAttribute('href').slice(1), doel = naam && document.getElementById(naam);
+  if (!doel) return;
+  e.preventDefault();
+  doel.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  history.pushState(null, '', '#' + naam);
 });
 
 // ---- slotblok: het beeldmerk achter de tekst beweegt licht mee met het scrollen (hoogstens 30 px), alleen terwijl het blok in beeld is ----

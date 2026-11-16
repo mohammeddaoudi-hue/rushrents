@@ -7,6 +7,14 @@ import { CONFIG, $, $$, h, ico, moment, waUrl, plaats, startBasis } from './basi
 import { fotoSet } from './fotos.js';
 
 const id = location.pathname.replace(/^\/rushrents(?=\/)/, '').split('/').filter(Boolean)[1] || '';
+// De hoofdfoto loopt alleen over in een wagenkaart bij "terug" naar de startpagina. Bij elke andere navigatie (het logo, "Alle wagens", een
+// andere pagina) krijgt ze geen gedeelde naam: anders zweeft de foto van deze wagen over de volgende pagina.
+const THUIS = new URL('../', import.meta.url).pathname;
+addEventListener('pageswap', (e) => {
+  const stap = e.activation, naar = stap?.entry?.url ? new URL(stap.entry.url).pathname : '';
+  if (!(stap?.navigationType === 'traverse' && naar === THUIS)) { const f = document.querySelector('#hoofdfoto'); if (f) f.style.viewTransitionName = 'none'; }
+});
+addEventListener('pageshow', () => { const f = document.querySelector('#hoofdfoto'); if (f) f.style.viewTransitionName = ''; }); // terug op deze pagina: de naam geldt weer
 const STAPPEN = ['periode', 'extras', 'gegevens', 'controleren'];
 let W = null, bezet = { dagen: {}, stukken: [], nietBeschikbaar: false, vandaag: iso(new Date()), nu: new Date().toISOString(), omloopMinuten: 0 };
 let vrij = null, maand0 = 0, kies = 'van', bezig = false, klaar = null, getoond = '', periodeFout = '', ronde = 0, wisselNr = 0;
@@ -95,7 +103,9 @@ function bouwGalerij() {
   if (!dias[0].classList.contains('is-actief')) dias[0].classList.add('is-actief');
   baan.replaceChildren(...dias.map((d) => d.closest('picture') || d)); // de hoofdfoto blijft in haar <picture> (kleinere versies, zie tools/foto-maten.mjs)
   if (dias.length < 2) return;
-  const teller = h('p', { class: 'gal-teller', 'aria-hidden': 'true', text: `1 / ${dias.length}` });
+  // de teller heeft haar plek al in de pagina (reserveren/index.html): zo verschuift er niets als ze haar tekst krijgt
+  const teller = $('#gal-teller') || h('p', { class: 'gal-teller', 'aria-hidden': 'true' });
+  teller.textContent = `1 / ${dias.length}`;
   const duimen = dias.map((d, i) => h('button', { type: 'button', class: 'gal-duim' + (i === 0 ? ' is-actief' : ''), 'aria-label': d.tagName === 'VIDEO' ? 'Video' : `Foto ${i + 1}`, 'aria-pressed': String(i === 0), onclick: () => toon(i, true) },
     ((f) => { const img = metMaten(h('img', { src: '/rushrents/media/' + f, alt: '', loading: 'lazy', width: 88, height: 59 }), f, '88px'); return img.closest('picture') || img; })(d.tagName === 'VIDEO' ? W.hoofdfoto : fotos[i])));
   let nu = 0;
@@ -112,7 +122,9 @@ function bouwGalerij() {
   baan.setAttribute('aria-label', `Foto's van de ${W.naam}`);
   baan.addEventListener('scroll', () => { if (!vegen()) return; const i = Math.round(baan.scrollLeft / baan.clientWidth); if (i !== nu) toon(i, false); }, { passive: true });
   baan.addEventListener('keydown', (e) => { const stap = { ArrowLeft: -1, ArrowRight: 1 }[e.key]; if (stap) { e.preventDefault(); toon(nu + stap, true); } });
-  gal.append(teller, h('div', { class: 'gal-duimen' }, ...duimen));
+  const rij = $('#gal-duimen') || h('div', { class: 'gal-duimen' }); // heeft de wagen meer dan één foto, dan staat de rij al in de pagina (plek gereserveerd)
+  rij.replaceChildren(...duimen);
+  gal.append(teller, rij);
 }
 
 // ---- kalender ---------------------------------------------------------------------------------
@@ -151,9 +163,17 @@ function kalender() {
   });
   return el;
 }
-/** dag (intypen als dd/mm/jjjj of aanklikken in de kalender) + uur */
+/** dag + uur. Desktop: de dag intypen als dd/mm/jjjj of aanklikken in de kalender. Gsm en aanraakschermen: geen invoerveld (dus geen
+ *  toetsenbord en geen kiezer van het toestel): het veld is een knop die de gekozen dag leesbaar toont ("ma 16 nov") en zegt welke dag de
+ *  volgende tik in de kalender zet (het veld met de lichte rand). */
 function momentVeld(wat) {
   const van = wat === 'van', dag = van ? S.van : S.tot, uur = van ? S.vanUur : S.totUur, kan = van ? afhaalKan : terugKan, naam = van ? 'Afhalen' : 'Terugbrengen';
+  const metTik = matchMedia('(max-width: 999px), (hover: none)').matches, aanBeurt = kies === 'van' || !S.van ? 'van' : 'tot';
+  const knop = metTik && h('button', { type: 'button', class: 'veld-dag' + (dag ? '' : ' is-leeg'), id: 'veld-' + wat, 'aria-pressed': String(wat === aanBeurt), text: dag ? metDag(dag) : 'Kies een dag', onclick: () => {
+    kies = van || !S.van ? 'van' : 'tot'; teken();
+    // staat de kalender niet in beeld, dan komt ze in beeld; staat ze er al, dan verspringt de pagina niet
+    requestAnimationFrame(() => { const kal = $('.kal'), r = kal?.getBoundingClientRect(); if (r && (r.top < 64 || r.top > innerHeight - 260)) kal.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
+  } });
   const inp = h('input', { id: 'veld-' + wat, type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: 'dd/mm/jjjj', maxlength: 10, value: nlDatum(dag) });
   const verwerk = () => {
     const t = inp.value.trim();
@@ -173,7 +193,7 @@ function momentVeld(wat) {
     if (van) { S.vanUur = e.target.value; if (S.tot) { if (eindKan(S.tot)) S.totUur = eersteUur(S.tot, terugKan, S.totUur); else S.tot = ''; } } else S.totUur = e.target.value;
     periodeFout = ''; controleer();
   } }, ...urenLijst(dag).map((u) => h('option', { value: u, text: u, selected: u === uur, disabled: dag ? !kan(dag, u) : null })));
-  return h('div', { class: 'veld' }, h('label', { for: 'veld-' + wat, text: naam }), h('span', { class: 'veld-rij' }, inp, kiesUur));
+  return h('div', { class: 'veld' }, h('label', { for: 'veld-' + wat, text: naam }), h('span', { class: 'veld-rij' + (metTik && wat === aanBeurt ? ' is-nu' : '') }, knop || inp, kiesUur));
 }
 
 // ---- stappen ----------------------------------------------------------------------------------
