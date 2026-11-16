@@ -21,7 +21,12 @@
 html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; scroll-padding-top: calc(var(--kop-klein) + env(safe-area-inset-top, 0px) + 24px); background: var(--bg); }
 html:has(dialog[open]) { overflow: hidden; }
 body { margin: 0; font-variant-numeric: tabular-nums; background: var(--bg); color: var(--tx); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; }
-body::after { content: ''; position: fixed; inset: 0; z-index: 90; pointer-events: none; background-image: var(--ruis); opacity: .045; mix-blend-mode: overlay; }
+/* korrel over de pagina, alleen met een muis. Op een gsm NOOIT: Safari (iOS 26) kleurt de strook achter de statusbalk en onder de
+   werkbalk met het eerste vaste element dat het daar raakt; een vaste laag over het hele scherm is dat element, en dan schemert de
+   pagina door boven de navigatie en onder de reserveerbalk (eis 16 nov, "boven de nav bar zwart"). */
+@media (hover: hover) and (pointer: fine) {
+  body::after { content: ''; position: fixed; inset: 0; z-index: 90; pointer-events: none; background-image: var(--ruis); opacity: .045; mix-blend-mode: overlay; }
+}
 img, video, svg { display: block; max-width: 100%; }
 h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; padding: 0; }
 ul, ol { list-style: none; }
@@ -90,7 +95,7 @@ h2[data-onthul] { width: fit-content; max-width: 100%; }
 .tekstknop:hover { text-decoration-color: var(--tx); }
 
 /* navigatie: vast bovenaan, doorzichtig over de hero; na 80 px scrollen lager en effen */
-.nav { position: fixed; inset: 0 0 auto 0; z-index: 40; height: calc(var(--kop) + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); border-bottom: 1px solid transparent; transition: height .3s var(--status), background-color .3s var(--status), border-color .3s var(--status); }
+.nav { position: fixed; inset: 0 0 auto 0; z-index: 40; height: calc(var(--kop) + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); border-bottom: 1px solid transparent; background-color: rgba(8, 8, 10, 0); transition: height .3s var(--status), background-color .3s var(--status), border-color .3s var(--status); }
 .nav::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 120px; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(5, 5, 6, .6), rgba(5, 5, 6, 0)); transition: opacity .3s var(--status); }
 .nav.is-scroll, .nav.is-vast { height: calc(var(--kop-klein) + env(safe-area-inset-top, 0px)); background: var(--bg); border-bottom-color: var(--lijn); }
 .nav.is-scroll::before, .nav.is-vast::before { opacity: 0; }
@@ -514,3 +519,9 @@ button.dag:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--lijn-knop); 
 html.droom-wacht:not(.droom-klaar) .droom-rij .l { transform: translateY(180%) scaleX(.7); }
 /* liggende gsm: het woordmerk staat naast het logo bovenaan, er is geen plaats boven */
 @media (max-height: 520px) and (min-aspect-ratio: 11/10) { .hero-droom { display: none; } }
+
+/* menu op gsm: onderaan twee knoppen, Bellen en WhatsApp (eis 16 nov), daaronder het nummer en het e-mailadres als tekst */
+.menu-bel { margin-top: auto; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.menu-bel .btn { width: 100%; padding: 0 12px; }
+.menu-bel .ico { width: 18px; height: 18px; }
+.menu-bel + .menu-contact { margin-top: 0; padding-top: 8px; }

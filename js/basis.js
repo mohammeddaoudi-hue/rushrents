@@ -68,6 +68,7 @@ export async function startBasis() {
   try { Object.assign(CONFIG, await loadSettings()); } catch { /* pagina werkt verder met de standaardwaarden */ }
   for (const a of $$('[data-wa]')) a.href = waVraag();
   for (const el of $$('[data-telefoon]')) el.textContent = telefoon(CONFIG.whatsapp);
+  if (CONFIG.whatsapp) for (const a of $$('a[data-tel]')) a.href = 'tel:+' + CONFIG.whatsapp;
   for (const el of $$('[data-locatie]')) el.textContent = CONFIG.locatie || 'Kortrijk';
   for (const el of $$('[data-locatie-lang]')) el.textContent = plaats();
   if (CONFIG.email) for (const m of $$('[data-mail]')) { m.hidden = false; m.href = 'mailto:' + CONFIG.email; m.textContent = CONFIG.email; }

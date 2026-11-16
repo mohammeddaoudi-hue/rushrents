@@ -66,12 +66,10 @@
 .ov .tekstknop { justify-self: start; margin-top: 8px; }
 
 /* vaste balk onderaan op gsm: prijsregel en knop */
-/* reserveerbalk (component 6): bijna dicht (95% dekkend, met een waas erachter: er is geen tekst doorheen te lezen), met bovenaan een lijn die toont hoe ver je bent (een kwart per stap; de stap komt uit de
+/* reserveerbalk (component 6): effen zwart (geen glas, geen doorzicht: Safari vult de strook eronder alleen met een effen kleur, eis 16 nov),
+   met bovenaan een lijn die toont hoe ver je bent (een kwart per stap; de stap komt uit de
    stappenrij bovenaan, zonder script). De knop is 48 px hoog en staat altijd binnen duimbereik. */
 .res-voet { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 12px var(--goot) max(12px, env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--lijn); }
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .res-voet { background: rgba(8, 8, 10, .95); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
-}
 .res-voet::before { content: ''; position: absolute; inset: -1px 0 auto 0; height: 1px; background: var(--tx); transform-origin: 0 50%; scale: var(--stap, .25) 1; transition: scale .5s var(--masker); }
 body:has(#voortgang [data-stap="extras"].is-nu) .res-voet { --stap: .5; }
 body:has(#voortgang [data-stap="gegevens"].is-nu) .res-voet { --stap: .75; }
